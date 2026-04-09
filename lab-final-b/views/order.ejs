@@ -1,0 +1,59 @@
+<%- include('partials/header') %>
+
+<section class="builder-hero">
+  <div class="container">
+    <h1>Choose Your Order Plan</h1>
+    <p>Final step: pick one-time delivery or start a recurring subscription.</p>
+  </div>
+</section>
+
+<section class="builder-section">
+  <div class="container order-layout">
+    <article class="builder-card order-summary">
+      <h2>Your Pint</h2>
+      <p><strong>Type:</strong> <%= tier %>-Flavour <%= tier === 4 ? 'Deluxe' : 'Classic' %></p>
+      <div class="flavour-chip-wrap">
+        <% selectedFlavours.forEach(flavour => { %>
+          <span class="flavour-chip"><%= flavour %></span>
+        <% }) %>
+      </div>
+    </article>
+
+    <article class="builder-card">
+      <h2>Delivery Details</h2>
+      <form method="POST" action="/order/submit" class="builder-form">
+        <input type="hidden" name="tier" value="<%= tier %>" />
+        <input type="hidden" name="selectedFlavours" value="<%= selectedFlavours.join(',') %>" />
+
+        <label>Name
+          <input type="text" name="name" required placeholder="Your full name" />
+        </label>
+        <label>Email
+          <input type="email" name="email" required placeholder="you@example.com" />
+        </label>
+
+        <h3>Order Plan</h3>
+        <label class="choice-row">
+          <input type="radio" name="plan" value="one-time" checked />
+          <span>
+            <strong>One-Time Order</strong>
+            <small>Perfect for trying a new combo.</small>
+          </span>
+        </label>
+        <label class="choice-row">
+          <input type="radio" name="plan" value="subscription" />
+          <span>
+            <strong>Weekly Subscription</strong>
+            <small>Fresh custom pint delivered every week.</small>
+          </span>
+        </label>
+
+        <div class="builder-actions left">
+          <button type="submit" class="btn-primary">Place My Order</button>
+        </div>
+      </form>
+    </article>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,116 @@
+
+<head>
+  <% 
+    const siteTitle = (seo && seo.siteTitle) ? seo.siteTitle : 'Craft My Coat';
+    const titleSeparator = (seo && seo.titleSeparator) ? seo.titleSeparator : '|';
+    const rawTitle = title || siteTitle;
+    const pageTitle = rawTitle.includes(siteTitle) ? rawTitle : `${rawTitle} ${titleSeparator} ${siteTitle}`;
+
+    const metaDescription = (seo && seo.metaDescription)
+      ? seo.metaDescription
+      : 'Design your perfect personalized coat with premium fabrics, custom tailoring, and luxury craftsmanship.';
+
+    const metaKeywords = (seo && seo.metaKeywords)
+      ? seo.metaKeywords
+      : 'custom coats, personalized coats, tailored coats, luxury tailoring, premium outerwear';
+
+    const robots = (seo && seo.robots) ? seo.robots : 'index, follow';
+    const canonical = (seo && seo.currentUrl) ? seo.currentUrl : '';
+    const ogImage = (seo && seo.ogImageUrl) ? seo.ogImageUrl : '/assets/logo.png';
+    const twitterCard = (seo && seo.twitterCard) ? seo.twitterCard : 'summary_large_image';
+  %>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title><%= pageTitle %></title>
+
+  <meta name="description" content="<%= metaDescription %>" />
+  <meta name="keywords" content="<%= metaKeywords %>" />
+  <meta name="robots" content="<%= robots %>" />
+
+  <link rel="canonical" href="<%= canonical %>" />
+<link rel="icon" type="image/png" href="/assets/favicon.png" />
+<link rel="shortcut icon" href="/assets/favicon.png" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="<%= pageTitle %>" />
+  <meta property="og:description" content="<%= metaDescription %>" />
+  <meta property="og:url" content="<%= canonical %>" />
+  <meta property="og:image" content="<%= ogImage %>" />
+
+  <meta name="twitter:card" content="<%= twitterCard %>" />
+  <meta name="twitter:title" content="<%= pageTitle %>" />
+  <meta name="twitter:description" content="<%= metaDescription %>" />
+  <meta name="twitter:image" content="<%= ogImage %>" />
+
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+
+<body>
+  <!-- Announcement Bar -->
+  <div class="announcement-bar">
+    BOOK AN APPOINTMENT AND CUSTOMIZE YOUR SUIT
+  </div>
+
+  <style>
+    .announcement-bar {
+      width: 100%;
+      background-color: black;
+      /* black background */
+      color: #fff;
+      /* white text */
+      text-align: center;
+      padding: 8px 0;
+      /* small vertical padding */
+      font-size: 14px;
+      font-weight: 500;
+
+    }
+  </style>
+  <header class="main-header">
+    <div class="container">
+
+      <nav class="main-nav">
+        <ul class="nav-list">
+          <li class="nav-item"><a href="/">Home</a></li>
+          <li class="nav-item"><a href="/products">Shop All</a></li>
+          <li class="nav-item"><a href="/about">About</a></li>
+          <li class="nav-item"><a href="/contact">Contact</a></li>
+          <% if (currentUser) { %>
+            <li class="nav-item"><a href="/wishlist">Wishlist</a></li>
+            <% } %>
+              <% if (currentUser && (currentUser.role==='Admin' || currentUser.role==='Manager' )) { %>
+                <li class="nav-item"><a href="/admin">Dashboard</a></li>
+                <% } %>
+        </ul>
+      </nav>
+      <div class="logo-area">
+        <a href="/" class="logo-link">
+          <img src="/assets/logo.png" alt="logo" style="width: 200px;height: auto;">
+        </a>
+      </div>
+      <div class="header-actions">
+        <% if (currentUser) { %>
+          <form action="/auth/signout" method="POST" class="inline-form">
+            <button type="submit" class="btn-outline">Sign Out</button>
+          </form>
+          <% } else { %>
+            <li class="nav-item nav-item-left" >
+              <a href="/customizedproduct" class="btn-primary">
+  Personalize
+</a>
+          
+            <a href="/auth/signin" class="btn-outline">Sign In</a>
+              
+              <a href="/cart"><svg class="icon-svg icon icon-cart" aria-hidden="true" focusable="false" role="presentation" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+	<path d="M41 17H7C5.89543 17 5 17.8954 5 19V45C5 46.1046 5.89543 47 7 47H41C42.1046 47 43 46.1046 43 45V19C43 17.8954 42.1046 17 41 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+	<path d="M15 13V10C15 7.61305 15.9482 5.32387 17.636 3.63604C19.3239 1.94821 21.6131 1 24 1C26.3869 1 28.6761 1.94821 30.364 3.63604C32.0518 5.32387 33 7.61305 33 10V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg></a>
+            
+            
+  </li>
+
+            <% } %>
+      </div>
+    </div>
+  </header>

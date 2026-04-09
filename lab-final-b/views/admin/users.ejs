@@ -1,0 +1,67 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1>Users</h1>
+
+  <h2>Create User</h2>
+  <form method="POST" action="/admin/users" class="admin-form">
+    <label>Name <input type="text" name="name" required /></label>
+    <label>Email <input type="email" name="email" required /></label>
+    <label>Password <input type="password" name="password" minlength="6" required /></label>
+    <label>Role
+      <select name="role" required>
+        <% ['Customer', 'Manager', 'Admin'].forEach(role => { %>
+          <option value="<%= role %>"><%= role %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Status
+      <select name="status" required>
+        <% ['Active', 'Inactive'].forEach(status => { %>
+          <option value="<%= status %>"><%= status %></option>
+        <% }) %>
+      </select>
+    </label>
+    <button type="submit" class="admin-btn">Create User</button>
+  </form>
+
+  <h2>User List</h2>
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      <% users.forEach(user => { %>
+        <tr>
+          <td>
+            <form method="POST" action="/admin/users/<%= user._id %>" class="inline-form">
+              <input type="text" name="name" value="<%= user.name %>" required />
+          </td>
+          <td><input type="email" name="email" value="<%= user.email %>" required /></td>
+          <td>
+            <select name="role">
+              <% ['Customer', 'Manager', 'Admin'].forEach(role => { %>
+                <option value="<%= role %>" <%= user.role === role ? 'selected' : '' %>><%= role %></option>
+              <% }) %>
+            </select>
+          </td>
+          <td>
+            <select name="status">
+              <% ['Active', 'Inactive'].forEach(status => { %>
+                <option value="<%= status %>" <%= user.status === status ? 'selected' : '' %>><%= status %></option>
+              <% }) %>
+            </select>
+          </td>
+          <td>
+              <input type="password" name="password" placeholder="New password (optional)" />
+              <button type="submit">Update</button>
+            </form>
+            <form method="POST" action="/admin/users/<%= user._id %>/delete" class="inline-form">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('partials/footer') %>

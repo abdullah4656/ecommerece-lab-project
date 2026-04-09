@@ -1,0 +1,19 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1>SEO Settings</h1>
+
+  <form method="POST" action="/admin/seo" class="admin-form">
+    <label>Site Title <input type="text" name="siteTitle" value="<%= settings.siteTitle %>" /></label>
+    <label>Title Separator <input type="text" name="titleSeparator" value="<%= settings.titleSeparator %>" /></label>
+    <label>Meta Description <textarea name="metaDescription"><%= settings.metaDescription %></textarea></label>
+    <label>Meta Keywords <input type="text" name="metaKeywords" value="<%= settings.metaKeywords %>" /></label>
+    <label>Canonical Base URL <input type="url" name="canonicalBaseUrl" value="<%= settings.canonicalBaseUrl %>" /></label>
+    <label>Robots <input type="text" name="robots" value="<%= settings.robots %>" /></label>
+    <label>OG Image URL <input type="text" name="ogImage" value="<%= settings.ogImage %>" /></label>
+    <label>Twitter Card <input type="text" name="twitterCard" value="<%= settings.twitterCard %>" /></label>
+    <button type="submit" class="admin-btn">Save SEO Settings</button>
+  </form>
+</section>
+
+<%- include('partials/footer') %>

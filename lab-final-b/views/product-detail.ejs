@@ -1,0 +1,116 @@
+<%- include('partials/header') %>
+
+<section class="product-detail">
+  <div class="detail-grid container">
+    
+    <img src="<%= product.image %>" alt="<%= product.name %>" class="detail-image" />
+
+    <div>
+      <h1><%= product.name %></h1>
+
+      <p> $<%= product.price.toFixed(2) %></p>
+
+
+
+<section class="product-info-accordion">
+
+  <div class="accordion-item">
+    <button class="accordion-btn">
+      <span>Details and Composition</span>
+      <span class="accordion-icon">+</span>
+    </button>
+    <div class="accordion-content">
+      <p>we focus on both quality fabrics and meticulous craftsmanship. Our overcoats are composed with attention to every detail</p>
+    </div>
+  </div>
+
+  <div class="accordion-item">
+    <button class="accordion-btn">
+      <span>Washing instructions</span>
+      <span class="accordion-icon">+</span>
+    </button>
+    <div class="accordion-content">
+      <p>Do not machine wash
+
+Do not use bleach
+
+Do not tumble dry</p>
+    </div>
+  </div>
+
+  <div class="accordion-item">
+    <button class="accordion-btn">
+      <span>Shipping</span>
+      <span class="accordion-icon">+</span>
+    </button>
+    <div class="accordion-content">
+      <p>Free shipping all over country.</p>
+    </div>
+  </div>
+
+  <div class="accordion-item">
+    <button class="accordion-btn">
+      <span>Return policy</span>
+      <span class="accordion-icon">+</span>
+    </button>
+    <div class="accordion-content">
+      <p>We want you to love your purchase! If you are not completely satisfied, you can return the product within 30 days of delivery for a full refund or exchange.</p>
+    </div>
+  </div>
+
+</section>
+      <p><%= product.description %></p>
+
+<form action="/cart/add" method="POST" class="builder-card">
+
+  <input type="hidden" name="productId" value="<%= product._id %>">
+
+  <label class="quantity-label">
+    Quantity
+    <div class="quantity-wrapper">
+      <button type="button" class="qty-btn decrement">−</button>
+      <input 
+        type="number" 
+        name="quantity" 
+        value="1" 
+        min="1" 
+        max="<%= product.stock %>" 
+        class="qty-input"
+      >
+      <button type="button" class="qty-btn increment">+</button>
+    </div>
+  </label>
+
+  <div class="product-actions top-gap">
+    <button style="    width: 100%;" type="submit" class="btn-primary">
+      Add To Cart
+    </button>
+  </div>
+
+</form>
+      <!-- WISHLIST -->
+      <div class="product-actions top-gap">
+        <% if (currentUser) { %>
+          <form method="POST" action="/wishlist/toggle/<%= product._id %>" class="inline-form wishlist-toggle-form">
+            <button
+              type="submit"
+              class="btn-wishlist <%= isWishlisted ? 'active' : '' %>"
+            >
+              <%= isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist' %>
+            </button>
+          </form>
+
+          <a href="/wishlist" class="btn-outline">View Wishlist</a>
+
+        <% } else { %>
+
+          <a href="/auth/signin" class="btn-outline">Sign in for wishlist</a>
+
+        <% } %>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

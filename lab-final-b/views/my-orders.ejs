@@ -1,0 +1,35 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1>My Orders</h1>
+  <p>Signed in as <strong><%= email %></strong></p>
+
+  <% if (!orders || orders.length === 0) { %>
+    <p>No orders found yet.</p>
+    <a href="/products" class="btn-primary">Shop Now</a>
+  <% } else { %>
+    <% orders.forEach(order => { %>
+      <article class="order-card">
+        <h3>Order #<%= order._id %></h3>
+        <p>Status: <strong><%= order.status %></strong></p>
+        <p>Plan: <strong><%= order.plan === 'subscription' ? 'Weekly Subscription' : 'One-Time Order' %></strong></p>
+        <p>Total: $<%= order.total.toFixed(2) %></p>
+        <p>Placed: <%= new Date(order.createdAt).toLocaleString() %></p>
+        <details>
+          <summary>Items</summary>
+          <ul>
+            <% order.items.forEach(item => { %>
+              <li><%= item.name %> x <%= item.quantity %> - $<%= item.lineTotal.toFixed(2) %></li>
+              <% if (item.selectedFlavours && item.selectedFlavours.length) { %>
+                <li class="muted">Custom: <%= item.scoopCount %>-flavour mix - <%= item.selectedFlavours.join(', ') %></li>
+              <% } %>
+            <% }) %>
+          </ul>
+        </details>
+      </article>
+    <% }) %>
+  <% } %>
+</section>
+
+<%- include('partials/footer') %>
+

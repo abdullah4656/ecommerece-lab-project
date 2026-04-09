@@ -1,0 +1,84 @@
+<%- include('partials/header') %>
+
+<section class="checkout-page">
+  <div class="container">
+    <h1 class="page-title">Checkout</h1>
+    <p class="page-subtitle">Complete your order with verified shipping details, plan selection, and preview before placing.</p>
+
+    <div class="trust-row top-gap center-cta">
+      <span class="trust-chip">🔐 Security Headers Active</span>
+      <span class="trust-chip">📦 Cold-Chain Shipping</span>
+      <span class="trust-chip">🧮 Full Price Breakdown</span>
+    </div>
+
+    <div class="checkout-grid">
+      <div class="checkout-form-card">
+        <h2>Shipping Details</h2>
+        <p class="muted">Use your best contact details for smooth delivery and order updates.</p>
+        <form method="POST" action="/order/preview" class="checkout-form">
+          <label>Name <input type="text" name="name" value="<%= profile.name %>" required /></label>
+          <label>Email <input type="email" name="email" value="<%= profile.email %>" required /></label>
+          <label>Phone <input type="text" name="phone" value="<%= profile.phone || '' %>" required /></label>
+          <label>Address <textarea name="address" required><%= profile.address || '' %></textarea></label>
+          <label>Order Plan
+            <select name="plan" required>
+              <option value="one-time">One-Time Order</option>
+              <option value="subscription">Weekly Subscription</option>
+            </select>
+          </label>
+          <label>Coupon Code <input type="text" name="couponCode" placeholder="Optional" /></label>
+          <button type="submit" class="btn-primary">Preview Order</button>
+        </form>
+      </div>
+
+      <aside class="checkout-summary-card">
+        <h2>Order Summary</h2>
+        <% cartItems.forEach(item => { %>
+          <div class="summary-row">
+            <p><strong><%= item.product.name %></strong> x <%= item.quantity %></p>
+            <p>$<%= item.itemTotal.toFixed(2) %></p>
+          </div>
+          <% if (item.selectedFlavours && item.selectedFlavours.length) { %>
+            <p class="muted summary-flavours">Flavours: <%= item.selectedFlavours.join(', ') %></p>
+          <% } %>
+        <% }) %>
+        <hr />
+        <p class="summary-row"><span>Subtotal</span><strong>$<%= subtotal.toFixed(2) %></strong></p>
+        <p class="summary-row"><span>Tax</span><strong>$<%= tax.toFixed(2) %></strong></p>
+        <p class="summary-row"><span>Shipping</span><strong>$<%= shipping.toFixed(2) %></strong></p>
+        <p class="summary-row total"><span>Total</span><strong>$<%= total.toFixed(2) %></strong></p>
+        <p class="muted top-gap">All totals are reviewed once again on the order preview page.</p>
+      </aside>
+    </div>
+
+    <div class="builder-grid top-gap">
+      <article class="builder-card">
+        <h2>Checkout Checklist</h2>
+        <ul class="tick-list">
+          <li>Confirm your email and phone for delivery updates</li>
+          <li>Verify address and plan type before preview</li>
+          <li>Apply valid coupons in the coupon field</li>
+          <li>Review final totals before placing the order</li>
+        </ul>
+      </article>
+      <article class="builder-card">
+        <h2>User Account Benefits</h2>
+        <p>Signed-in users can revisit previous orders, track statuses, and manage repeat purchases efficiently.</p>
+        <a href="/my-orders" class="btn-outline">View My Orders</a>
+      </article>
+    </div>
+
+    <div class="builder-grid top-gap">
+      <article class="builder-card">
+        <h2>Need Help During Checkout?</h2>
+        <p>Use the chatbot for guidance on shipping plans, subscriptions, coupons, or cart troubleshooting.</p>
+      </article>
+      <article class="builder-card">
+        <h2>SEO and Trust Integration</h2>
+        <p>This page includes on-page metadata support and security protections with Helmet-based headers.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

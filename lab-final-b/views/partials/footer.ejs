@@ -1,0 +1,72 @@
+<footer class="main-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>Coat and Craft</h4>
+        <p>Create your own custom suit.
+          Feel free to contact us for any queries.
+        <p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        <p><a href="/">Home</a></p>
+        <p><a href="/products">Shop Your Coat</a></p>
+        <p><a href="/cart">Cart</a></p>
+        <p><a href="/checkout">Checkout</a></p>
+      </div>
+      <div>
+        <h4>Account</h4>
+        <p><a href="/auth/signin">Sign In</a></p>
+        <p><a href="/auth/signup">Sign Up</a></p>
+        <p><a href="/my-orders">My Orders</a></p>
+      </div>
+      <div>
+        <h4>Support & Company</h4>
+        <p><a href="/about">About</a></p>
+        <p><a href="/contact">Contact</a></p>
+        <p><a href="/admin">Admin Dashboard</a></p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <%= new Date().getFullYear() %> Coat and Craft. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+<button id="chatbotToggle" class="chatbot-toggle" type="button" aria-label="Open chat assistant">Chat</button>
+<section id="chatbotPanel" class="chatbot-panel" aria-label="Coat and Craft Assistant">
+  <header class="chatbot-header">
+    <div>
+      <strong>Coat and Craft Assistant</strong>
+      <p>Ask about custom coats, sizes, personalization, orders, or shipping.</p>
+    </div>
+    <button id="chatbotClose" type="button" class="chatbot-close" aria-label="Close chat">×</button>
+  </header>
+  <div id="chatbotBody" class="chatbot-body">
+    <div class="chatbot-msg bot">
+      <p>Hello! Need help with choosing your coat, customizing it, or tracking your order?</p>
+    </div>
+  </div>
+  <div class="chatbot-prompts">
+    <button type="button" class="chatbot-prompt"
+      data-question="What sizes do you offer for overcoats?">Sizes</button>
+    <button type="button" class="chatbot-prompt"
+      data-question="How can I personalize my coat?">Personalization</button>
+    <button type="button" class="chatbot-prompt"
+      data-question="What is your return and exchange policy?">Returns & Exchanges</button>
+    <button type="button" class="chatbot-prompt"
+      data-question="How can I track my order status?">Track Orders</button>
+    <button type="button" class="chatbot-prompt"
+      data-question="Do you offer gift wrapping or special packaging?">Gift Options</button>
+    <button type="button" class="chatbot-prompt"
+      data-question="Can I modify my order after checkout?">Modify Order</button>
+  </div>
+  <form id="chatbotForm" class="chatbot-form">
+    <input id="chatbotInput" type="text" placeholder="Type your question..." autocomplete="off" />
+    <button type="submit">Send</button>
+  </form>
+</section>
+
+<script src="/js/script.js"></script>
+</body>
+
+</html>

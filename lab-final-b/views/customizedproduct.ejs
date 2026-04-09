@@ -1,0 +1,975 @@
+/* views/custom-coat-builder.ejs */
+<%- include('partials/header') %>
+
+<section class="custom-coat-builder">
+    <div class="container">
+        
+
+        <div class="builder-header">
+            <h1>Design Your Bespoke Coat</h1>
+            <p>Experience the pinnacle of tailoring. Every detail, from construction to personalization, is crafted to your exact specifications.</p>
+        </div>
+
+        <!-- Main Builder Form -->
+        <form id="customCoatForm" class="builder-form" action="/custom-coat/submit" method="POST">
+
+            <div class="builder-grid">
+
+                <!-- Left Column - Customization Options -->
+                <div class="builder-options">
+
+                    <!-- Interior Construction -->
+                    <div class="option-card">
+                        <div class="option-header">
+                            <span class="option-icon">🏗️</span>
+                            <h3>Interior Construction</h3>
+                        </div>
+                        <div class="option-content">
+                            <div class="radio-group">
+                                <label class="radio-card">
+                                    <input type="radio" name="interiorConstruction" value="Full Canvas" required>
+                                    <div class="radio-content">
+                                        <strong>Full Canvas</strong>
+                                        <small>Premium construction with better drape and longevity</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="interiorConstruction" value="Half Canvas">
+                                    <div class="radio-content">
+                                        <strong>Half Canvas</strong>
+                                        <small>Balance of quality and affordability</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="interiorConstruction" value="Fused">
+                                    <div class="radio-content">
+                                        <strong>Fused</strong>
+                                        <small>Modern construction with consistent finish</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pockets -->
+                    <div class="option-card">
+                        <div class="option-header">
+                            <span class="option-icon">👖</span>
+                            <h3>Pockets</h3>
+                        </div>
+                        <div class="option-content">
+                            <div class="radio-group">
+                                <label class="radio-card">
+                                    <input type="radio" name="pockets" value="Patch" required>
+                                    <div class="radio-content">
+                                        <strong>Patch Pockets</strong>
+                                        <small>Casual and classic look</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="pockets" value="Flap">
+                                    <div class="radio-content">
+                                        <strong>Flap Pockets</strong>
+                                        <small>Traditional formal style</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="pockets" value="Jetted">
+                                    <div class="radio-content">
+                                        <strong>Jetted Pockets</strong>
+                                        <small>Sleek and modern</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="pockets" value="Ticket">
+                                    <div class="radio-content">
+                                        <strong>Ticket Pocket</strong>
+                                        <small>Classic outer pocket for tickets</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shoulder Pads -->
+                    <div class="option-card">
+                        <div class="option-header">
+                            <h3>Shoulder Pads</h3>
+                        </div>
+                        <div class="option-content">
+                            <div class="radio-group">
+                                <label class="radio-card">
+                                    <input type="radio" name="shoulderPads" value="Light" required>
+                                    <div class="radio-content">
+                                        <strong>Light</strong>
+                                        <small>Natural shoulder line</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="shoulderPads" value="Medium">
+                                    <div class="radio-content">
+                                        <strong>Medium</strong>
+                                        <small>Structured but comfortable</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="shoulderPads" value="Heavy">
+                                    <div class="radio-content">
+                                        <strong>Heavy</strong>
+                                        <small>Bold, defined shoulders</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="shoulderPads" value="None">
+                                    <div class="radio-content">
+                                        <strong>None</strong>
+                                        <small>Soft, unstructured look</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chopped / Length -->
+                    <div class="option-card">
+                        <div class="option-header">
+                            <span class="option-icon">✂️</span>
+                            <h3>Coat Length</h3>
+                        </div>
+                        <div class="option-content">
+                            <div class="radio-group">
+                                <label class="radio-card">
+                                    <input type="radio" name="chopped" value="Standard" required>
+                                    <div class="radio-content">
+                                        <strong>Standard Length</strong>
+                                        <small>Classic traditional length</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="chopped" value="Chopped">
+                                    <div class="radio-content">
+                                        <strong>Chopped (Shortened)</strong>
+                                        <small>Modern cropped length</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="chopped" value="Long">
+                                    <div class="radio-content">
+                                        <strong>Long Length</strong>
+                                        <small>Extended elegant length</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inner Lining -->
+                    <div class="option-card">
+                        <div class="option-header">
+                            <span class="option-icon">🧵</span>
+                            <h3>Inner Lining</h3>
+                        </div>
+                        <div class="option-content">
+                            <div class="radio-group">
+                                <label class="radio-card">
+                                    <input type="radio" name="innerLining" value="Polyester" required>
+                                    <div class="radio-content">
+                                        <strong>Polyester</strong>
+                                        <small>Durable and affordable</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="innerLining" value="Viscose">
+                                    <div class="radio-content">
+                                        <strong>Viscose</strong>
+                                        <small>Breathable and smooth</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="innerLining" value="Cupro">
+                                    <div class="radio-content">
+                                        <strong>Cupro</strong>
+                                        <small>Luxurious silk-like feel</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="innerLining" value="Silk">
+                                    <div class="radio-content">
+                                        <strong>Silk</strong>
+                                        <small>Premium luxury lining</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stitching Style -->
+                    <div class="option-card">
+                        <div class="option-header">
+                            <span class="option-icon">🪡</span>
+                            <h3>Stitching Style</h3>
+                        </div>
+                        <div class="option-content">
+                            <div class="radio-group">
+                                <label class="radio-card">
+                                    <input type="radio" name="stitchingStyle" value="Straight" required>
+                                    <div class="radio-content">
+                                        <strong>Straight Stitch</strong>
+                                        <small>Clean, classic finish</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="stitchingStyle" value="Straight + Ticket">
+                                    <div class="radio-content">
+                                        <strong>Straight + Ticket Stitch</strong>
+                                        <small>Double stitch detail</small>
+                                    </div>
+                                </label>
+                                <label class="radio-card">
+                                    <input type="radio" name="stitchingStyle" value="Pick Stitch">
+                                    <div class="radio-content">
+                                        <strong>Pick Stitch</strong>
+                                        <small>Hand-finished appearance</small>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Initials (Personalization) -->
+                    <div class="option-card">
+                        <div class="option-header">
+                            <h3>Personalization - Initials</h3>
+                        </div>
+                        <div class="option-content">
+                            <div class="input-group">
+                                <label for="initials">Enter up to 3 letters</label>
+                                <input type="text" id="initials" name="initials" maxlength="3" placeholder="ABC"
+                                    pattern="[A-Za-z]{1,3}" title="Please enter 1-3 letters">
+                                <small>Your initials will be embroidered inside the coat</small>
+                            </div>
+
+                            <div class="font-group">
+                                <label>Embroidery Font</label>
+                                <div class="radio-group horizontal">
+                                    <label>
+                                        <input type="radio" name="fontStyle" value="Classic" checked>
+                                        <span>Classic</span>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="fontStyle" value="Modern">
+                                        <span>Modern</span>
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="fontStyle" value="Script">
+                                        <span>Script</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column - Preview & Summary -->
+                <div class="builder-summary">
+
+                    <!-- Live Preview Card -->
+                    <div class="summary-card">
+                        <h3>Your Bespoke Coat Preview</h3>
+                        <div class="coat-preview" id="coatPreview">
+                            <svg class="coat-svg" viewBox="0 0 200 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Coat body -->
+                                <path id="coatBody" d="M50,60 L150,60 L170,280 L30,280 L50,60Z" fill="#1a1a2e" stroke="#333" stroke-width="2"/>
+                                <!-- Lapels -->
+                                <path id="leftLapel" d="M50,60 L100,130 L80,200 L50,180Z" fill="#2d2d44" stroke="#333" stroke-width="1.5"/>
+                                <path id="rightLapel" d="M150,60 L100,130 L120,200 L150,180Z" fill="#2d2d44" stroke="#333" stroke-width="1.5"/>
+                                <!-- Collar -->
+                                <path id="collar" d="M50,60 L100,30 L150,60" fill="#3a3a5c" stroke="#333" stroke-width="1.5"/>
+                                <!-- Center line -->
+                                <line id="centerLine" x1="100" y1="60" x2="100" y2="280" stroke="#555" stroke-width="1" stroke-dasharray="4"/>
+                                <!-- Buttons -->
+                                <circle cx="100" cy="150" r="3" fill="#c9a84c"/>
+                                <circle cx="100" cy="180" r="3" fill="#c9a84c"/>
+                                <circle cx="100" cy="210" r="3" fill="#c9a84c"/>
+                                <!-- Pockets group -->
+                                <g id="pocketLeft"></g>
+                                <g id="pocketRight"></g>
+                                <!-- Shoulder pads indicator -->
+                                <g id="shoulderIndicator"></g>
+                                <!-- Length indicator -->
+                                <g id="lengthIndicator"></g>
+                                <!-- Stitching style indicator -->
+                                <g id="stitchingIndicator"></g>
+                            </svg>
+                        </div>
+
+                        <div class="selection-summary" id="selectionSummary">
+                            <div class="summary-item">
+                                <span class="summary-label">Interior:</span>
+                                <span class="summary-value">Not selected</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Pockets:</span>
+                                <span class="summary-value">Not selected</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Shoulder Pads:</span>
+                                <span class="summary-value">Not selected</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Length:</span>
+                                <span class="summary-value">Not selected</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Lining:</span>
+                                <span class="summary-value">Not selected</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Stitching:</span>
+                                <span class="summary-value">Not selected</span>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-label">Initials:</span>
+                                <span class="summary-value">Not added</span>
+                            </div>
+                        </div>
+
+                        <div class="price-box">
+                            <span class="price-label">Base Price</span>
+                            <span class="price-value">$199.00</span>
+                        </div>
+
+                        <button type="submit" class="btn-submit">Submit Custom Order</button>
+                        <p class="form-note">We'll contact you within 24 hours with pricing and next steps</p>
+                    </div>
+
+                    <!-- Information Cards -->
+                    <div class="info-card">
+                        <h4>📏 Measurements Needed</h4>
+                        <p>After submitting, we'll send you a measurement guide to ensure perfect fit.</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h4>⏱️ Production Time</h4>
+                        <p>Custom coats typically take 3-4 weeks for production and delivery.</p>
+                    </div>
+
+                    <div class="info-card">
+                        <h4>🔄 Returns & Alterations</h4>
+                        <p>Minor alterations included within 30 days of delivery.</p>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</section>
+
+<script>
+    // Live preview update script with enhanced coat visualization
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('customCoatForm');
+        const summarySpans = document.querySelectorAll('#selectionSummary .summary-value');
+        
+        // Get SVG elements for dynamic updates
+        const coatBody = document.getElementById('coatBody');
+        const leftLapel = document.getElementById('leftLapel');
+        const rightLapel = document.getElementById('rightLapel');
+        const collar = document.getElementById('collar');
+        
+        // Update summary when any radio button changes
+        const radioGroups = document.querySelectorAll('input[type="radio"]');
+        radioGroups.forEach(radio => {
+            radio.addEventListener('change', function () {
+                updateSummary();
+                updateCoatPreview();
+            });
+        });
+
+        // Update initials field
+        const initialsInput = document.getElementById('initials');
+        if (initialsInput) {
+            initialsInput.addEventListener('input', function () {
+                updateSummary();
+                updateCoatPreview();
+            });
+        }
+        
+        // Update lining color preview
+        const liningRadios = document.querySelectorAll('input[name="innerLining"]');
+        liningRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateLiningColor();
+            });
+        });
+        
+        // Update shoulder pads visual
+        const shoulderRadios = document.querySelectorAll('input[name="shoulderPads"]');
+        shoulderRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateShoulderVisual();
+            });
+        });
+        
+        // Update length visual
+        const lengthRadios = document.querySelectorAll('input[name="chopped"]');
+        lengthRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateLengthVisual();
+            });
+        });
+        
+        // Update stitching visual
+        const stitchingRadios = document.querySelectorAll('input[name="stitchingStyle"]');
+        stitchingRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                updateStitchingVisual();
+            });
+        });
+        
+        // Update pockets visual
+        const pocketRadios = document.querySelectorAll('input[name="pockets"]');
+        pocketRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                updatePocketVisual();
+            });
+        });
+        
+        function updateLiningColor() {
+            const selectedLining = document.querySelector('input[name="innerLining"]:checked');
+            if (selectedLining) {
+                let color = '#1a1a2e'; // default dark
+                switch(selectedLining.value) {
+                    case 'Polyester': color = '#2d2d44'; break;
+                    case 'Viscose': color = '#3d3d5c'; break;
+                    case 'Cupro': color = '#4a4a6e'; break;
+                    case 'Silk': color = '#5a5a7e'; break;
+                }
+                coatBody.setAttribute('fill', color);
+                leftLapel.setAttribute('fill', color);
+                rightLapel.setAttribute('fill', color);
+                collar.setAttribute('fill', color);
+            }
+        }
+        
+        function updateShoulderVisual() {
+            const selectedShoulder = document.querySelector('input[name="shoulderPads"]:checked');
+            const shoulderGroup = document.getElementById('shoulderIndicator');
+            shoulderGroup.innerHTML = '';
+            
+            if (selectedShoulder) {
+                let shoulderLevel = selectedShoulder.value;
+                let shoulderElements = '';
+                
+                if (shoulderLevel === 'Light') {
+                    shoulderElements = '<ellipse cx="60" cy="55" rx="15" ry="8" fill="rgba(100,100,150,0.3)"/><ellipse cx="140" cy="55" rx="15" ry="8" fill="rgba(100,100,150,0.3)"/>';
+                } else if (shoulderLevel === 'Medium') {
+                    shoulderElements = '<ellipse cx="55" cy="52" rx="18" ry="10" fill="rgba(100,100,150,0.4)"/><ellipse cx="145" cy="52" rx="18" ry="10" fill="rgba(100,100,150,0.4)"/>';
+                } else if (shoulderLevel === 'Heavy') {
+                    shoulderElements = '<ellipse cx="50" cy="48" rx="22" ry="12" fill="rgba(100,100,150,0.5)"/><ellipse cx="150" cy="48" rx="22" ry="12" fill="rgba(100,100,150,0.5)"/>';
+                }
+                
+                shoulderGroup.innerHTML = shoulderElements;
+            }
+        }
+        
+        function updateLengthVisual() {
+            const selectedLength = document.querySelector('input[name="chopped"]:checked');
+            const lengthGroup = document.getElementById('lengthIndicator');
+            lengthGroup.innerHTML = '';
+            
+            if (selectedLength) {
+                let lengthType = selectedLength.value;
+                let lengthElements = '';
+                
+                if (lengthType === 'Chopped') {
+                    lengthElements = '<line x1="100" y1="260" x2="100" y2="280" stroke="#ff6b6b" stroke-width="2" stroke-dasharray="4"/><text x="105" y="265" font-size="8" fill="#ff6b6b">Cropped</text>';
+                } else if (lengthType === 'Long') {
+                    lengthElements = '<line x1="100" y1="280" x2="100" y2="300" stroke="#4ecdc4" stroke-width="2" stroke-dasharray="4"/><text x="105" y="290" font-size="8" fill="#4ecdc4">Extended</text>';
+                } else if (lengthType === 'Standard') {
+                    lengthElements = '<line x1="100" y1="280" x2="100" y2="285" stroke="#95e77a" stroke-width="2" stroke-dasharray="4"/><text x="105" y="283" font-size="8" fill="#95e77a">Classic</text>';
+                }
+                
+                lengthGroup.innerHTML = lengthElements;
+            }
+        }
+        
+        function updateStitchingVisual() {
+            const selectedStitching = document.querySelector('input[name="stitchingStyle"]:checked');
+            const stitchingGroup = document.getElementById('stitchingIndicator');
+            stitchingGroup.innerHTML = '';
+            
+            if (selectedStitching) {
+                let stitchType = selectedStitching.value;
+                let stitchElements = '';
+                
+                if (stitchType === 'Straight + Ticket') {
+                    stitchElements = '<line x1="45" y1="100" x2="155" y2="100" stroke="#ffd700" stroke-width="1" stroke-dasharray="3,3"/><line x1="45" y1="105" x2="155" y2="105" stroke="#ffd700" stroke-width="0.5" stroke-dasharray="2,4"/>';
+                } else if (stitchType === 'Pick Stitch') {
+                    stitchElements = '<path d="M45,95 L48,98 L51,95 L54,98 L57,95 L60,98" stroke="#ffd700" fill="none" stroke-width="1"/><path d="M140,95 L143,98 L146,95 L149,98 L152,95 L155,98" stroke="#ffd700" fill="none" stroke-width="1"/>';
+                } else {
+                    stitchElements = '<line x1="45" y1="100" x2="155" y2="100" stroke="#ffd700" stroke-width="1" stroke-dasharray="4,2"/>';
+                }
+                
+                stitchingGroup.innerHTML = stitchElements;
+            }
+        }
+        
+        function updatePocketVisual() {
+            const selectedPocket = document.querySelector('input[name="pockets"]:checked');
+            const pocketLeft = document.getElementById('pocketLeft');
+            const pocketRight = document.getElementById('pocketRight');
+            
+            pocketLeft.innerHTML = '';
+            pocketRight.innerHTML = '';
+            
+            if (selectedPocket) {
+                let pocketType = selectedPocket.value;
+                let pocketPath = '';
+                let pocketPathRight = '';
+                
+                if (pocketType === 'Patch') {
+                    pocketPath = '<rect x="40" y="200" width="30" height="25" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/><rect x="130" y="200" width="30" height="25" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/>';
+                } else if (pocketType === 'Flap') {
+                    pocketPath = '<rect x="40" y="200" width="30" height="25" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/><path d="M40,200 L70,200 L65,210 L45,210Z" fill="#c9a84c" opacity="0.5"/><rect x="130" y="200" width="30" height="25" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/><path d="M130,200 L160,200 L155,210 L135,210Z" fill="#c9a84c" opacity="0.5"/>';
+                } else if (pocketType === 'Jetted') {
+                    pocketPath = '<rect x="40" y="200" width="30" height="8" rx="1" fill="#c9a84c" opacity="0.7"/><rect x="130" y="200" width="30" height="8" rx="1" fill="#c9a84c" opacity="0.7"/>';
+                } else if (pocketType === 'Ticket') {
+                    pocketPath = '<rect x="40" y="200" width="30" height="25" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/><rect x="75" y="195" width="20" height="15" rx="1" fill="none" stroke="#c9a84c" stroke-width="1"/>';
+                    pocketPathRight = '<rect x="130" y="200" width="30" height="25" rx="2" fill="none" stroke="#c9a84c" stroke-width="1.5"/><rect x="105" y="195" width="20" height="15" rx="1" fill="none" stroke="#c9a84c" stroke-width="1"/>';
+                }
+                
+                if (pocketType === 'Ticket') {
+                    pocketLeft.innerHTML = pocketPath;
+                    pocketRight.innerHTML = pocketPathRight;
+                } else {
+                    pocketLeft.innerHTML = pocketPath;
+                    pocketRight.innerHTML = pocketPath;
+                }
+            }
+        }
+
+        function updateSummary() {
+            // Interior Construction
+            const interior = document.querySelector('input[name="interiorConstruction"]:checked');
+            if (interior) summarySpans[0].textContent = interior.value;
+            else summarySpans[0].textContent = 'Not selected';
+
+            // Pockets
+            const pockets = document.querySelector('input[name="pockets"]:checked');
+            if (pockets) summarySpans[1].textContent = pockets.value;
+            else summarySpans[1].textContent = 'Not selected';
+
+            // Shoulder Pads
+            const shoulder = document.querySelector('input[name="shoulderPads"]:checked');
+            if (shoulder) summarySpans[2].textContent = shoulder.value;
+            else summarySpans[2].textContent = 'Not selected';
+
+            // Length
+            const length = document.querySelector('input[name="chopped"]:checked');
+            if (length) summarySpans[3].textContent = length.value;
+            else summarySpans[3].textContent = 'Not selected';
+
+            // Lining
+            const lining = document.querySelector('input[name="innerLining"]:checked');
+            if (lining) summarySpans[4].textContent = lining.value;
+            else summarySpans[4].textContent = 'Not selected';
+
+            // Stitching
+            const stitching = document.querySelector('input[name="stitchingStyle"]:checked');
+            if (stitching) summarySpans[5].textContent = stitching.value;
+            else summarySpans[5].textContent = 'Not selected';
+
+            // Initials
+            const initials = initialsInput ? initialsInput.value.trim() : '';
+            summarySpans[6].textContent = initials ? initials.toUpperCase() : 'Not added';
+        }
+        
+        function updateCoatPreview() {
+            updateLiningColor();
+            updateShoulderVisual();
+            updateLengthVisual();
+            updateStitchingVisual();
+            updatePocketVisual();
+        }
+        
+        // Initialize with default selections
+        updateCoatPreview();
+    });
+</script>
+
+<style>
+    .custom-coat-builder {
+        padding: 60px 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .breadcrumb {
+        margin-bottom: 30px;
+        font-size: 14px;
+        color: #6c757d;
+        font-family: 'Inter', sans-serif;
+    }
+
+  
+   
+
+    .builder-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .builder-header h1 {
+        font-size: 48px;
+        font-weight: 300;
+        letter-spacing: -0.5px;
+        color: #1a1a2e;
+        margin-bottom: 15px;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .builder-header p {
+        font-size: 18px;
+        color: #6c757d;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .builder-grid {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 40px;
+    }
+
+    .builder-options {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .option-card {
+        background: white;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+        border: 1px solid rgba(139, 115, 85, 0.1);
+    }
+
+   
+
+    .option-header {
+        background: linear-gradient(135deg, #fff8f0 0%, #fff 100%);
+        padding: 18px 24px;
+        border-bottom: 1px solid rgba(139, 115, 85, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .option-icon {
+        font-size: 28px;
+    }
+
+    .option-header h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 500;
+        color: #1a1a2e;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .option-content {
+        padding: 24px;
+    }
+
+    .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .radio-group.horizontal {
+        flex-direction: row;
+        gap: 20px;
+    }
+
+    .radio-card {
+        display: block;
+        cursor: pointer;
+    }
+
+    .radio-card input[type="radio"] {
+        display: none;
+    }
+
+    .radio-content {
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        padding: 14px 18px;
+        transition: all 0.3s;
+        background: white;
+    }
+
+    .radio-card input[type="radio"]:checked + .radio-content {
+        border-color: #c9a84c;
+        background: linear-gradient(135deg, #fffaf5 0%, #fff 100%);
+        box-shadow: 0 4px 12px rgba(201, 168, 76, 0.15);
+    }
+
+    .radio-content strong {
+        display: block;
+        margin-bottom: 6px;
+        color: #1a1a2e;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .radio-content small {
+        font-size: 12px;
+        color: #6c757d;
+        line-height: 1.4;
+    }
+
+    .input-group {
+        margin-bottom: 20px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #1a1a2e;
+        font-size: 14px;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        font-size: 16px;
+        transition: all 0.3s;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .input-group input:focus {
+        outline: none;
+        border-color: #c9a84c;
+        box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.1);
+    }
+
+    .input-group small {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .font-group {
+        margin-top: 20px;
+    }
+
+    .font-group label {
+        display: block;
+        margin-bottom: 12px;
+        font-weight: 500;
+        color: #1a1a2e;
+        font-size: 14px;
+    }
+
+    .builder-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 6px;
+        padding: 28px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        position: sticky;
+        top: 20px;
+        border: 1px solid rgba(139, 115, 85, 0.1);
+    }
+
+    .summary-card h3 {
+        margin: 0 0 24px 0;
+        font-size: 24px;
+        font-weight: 500;
+        color: #1a1a2e;
+        text-align: center;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .coat-preview {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 6px;
+        padding: 24px;
+        text-align: center;
+        margin-bottom: 24px;
+        min-height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid rgba(139, 115, 85, 0.2);
+    }
+
+    .coat-svg {
+        width: 100%;
+        max-width: 200px;
+        height: auto;
+    }
+
+    .selection-summary {
+        margin: 24px 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+        border-radius: 6px;
+    }
+
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        font-size: 14px;
+    }
+
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+
+    .summary-label {
+        color: #6c757d;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .summary-value {
+        color: #1a1a2e;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .price-box {
+        text-align: center;
+        padding: 20px;
+        background:black;
+        border-radius: 6px;
+        margin: 24px 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .price-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        transition: left 0.5s;
+    }
+
+
+    .price-label {
+        color: rgba(255,255,255,0.8);
+        font-size: 14px;
+        display: block;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .price-value {
+        color: white;
+        font-size: 32px;
+        font-weight: bold;
+        display: block;
+        margin-top: 8px;
+    }
+
+    .btn-submit {
+        width: 100%;
+        background: #8b0000;
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+
+    .form-note {
+        text-align: center;
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 16px;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: 6px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(139, 115, 85, 0.1);
+        transition: transform 0.3s;
+    }
+
+    
+
+    .info-card h4 {
+        margin: 0 0 10px 0;
+        color: #1a1a2e;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .info-card p {
+        margin: 0;
+        color: #6c757d;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 1024px) {
+        .builder-grid {
+            gap: 30px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .builder-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .builder-header h1 {
+            font-size: 32px;
+        }
+        
+        .summary-card {
+            position: static;
+        }
+        
+        .custom-coat-builder {
+            padding: 40px 0;
+        }
+    }
+</style>
+
+<%- include('partials/footer') %>

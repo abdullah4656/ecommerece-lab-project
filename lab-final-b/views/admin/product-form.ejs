@@ -1,0 +1,41 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1><%= editMode ? 'Edit Product' : 'Add Product' %></h1>
+
+  <form method="POST" action="<%= formAction %>" class="admin-form">
+    <label>Name <input type="text" name="name" value="<%= product ? product.name : '' %>" required /></label>
+    <label>Price <input type="number" name="price" step="0.01" value="<%= product ? product.price : '' %>" required /></label>
+    <label>Image URL <input type="url" name="image" value="<%= product ? product.image : '' %>" /></label>
+    <label>Or Choose Image From Store
+      <select name="imageFromStore">
+        <option value="">Select image from assets</option>
+        <% (storeImages || []).forEach(img => { %>
+          <option value="<%= img %>" <%= product && product.image === img ? 'selected' : '' %>><%= img %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Short Description <input type="text" name="shortDescription" value="<%= product ? (product.shortDescription || '') : '' %>" /></label>
+    <label>Description <textarea name="description" required><%= product ? product.description : '' %></textarea></label>
+    <label>Stock <input type="number" name="stock" min="0" value="<%= product ? (product.stock || 0) : 50 %>" /></label>
+    <label>
+      <input type="checkbox" name="isActive" <%= product ? (product.isActive ? 'checked' : '') : 'checked' %> /> Active on storefront
+    </label>
+
+    <h2>Flavour Options</h2>
+    <p>One flavour per line using format: Name|Note|#Color</p>
+    <textarea name="flavourOptions" rows="6"><% if (product && product.flavourOptions && product.flavourOptions.length) { %><%= product.flavourOptions.map(item => `${item.name}|${item.note || ''}|${item.color || ''}`).join('\n') %><% } %></textarea>
+
+    <h2>SEO Fields</h2>
+    <label>SEO Title <input type="text" name="seoTitle" value="<%= product ? (product.seoTitle || '') : '' %>" /></label>
+    <label>SEO Description <textarea name="seoDescription"><%= product ? (product.seoDescription || '') : '' %></textarea></label>
+    <label>SEO Keywords <input type="text" name="seoKeywords" value="<%= product ? (product.seoKeywords || '') : '' %>" /></label>
+    <label>Meta Robots <input type="text" name="metaRobots" value="<%= product ? (product.metaRobots || 'index, follow') : 'index, follow' %>" /></label>
+    <label>Canonical URL <input type="url" name="canonicalUrl" value="<%= product ? (product.canonicalUrl || '') : '' %>" /></label>
+
+    <button type="submit" class="admin-btn"><%= submitText %></button>
+  </form>
+</section>
+
+<%- include('partials/footer') %>
+

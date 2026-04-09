@@ -1,0 +1,38 @@
+<%- include('partials/header') %>
+
+<section>
+  <div class="dashboard-topbar">
+    <div>
+      <h1>Dashboard</h1>
+      <p class="dashboard-subtitle">Manage catalog, users, orders, and jump back to your storefront quickly.</p>
+    </div>
+    <a href="/" class="admin-btn admin-btn-site" target="_blank" rel="noopener noreferrer">Back to Site</a>
+  </div>
+
+  <div class="dashboard-actions">
+    <a href="/admin/products/add" class="admin-btn">Add Product</a>
+    <a href="/admin/orders" class="admin-btn admin-btn-muted">Review Orders</a>
+    <a href="/admin/seo" class="admin-btn admin-btn-muted">SEO Settings</a>
+  </div>
+
+  <div class="admin-stats">
+    <article class="stat-card"><h3><%= totalProducts %></h3><p>Products</p></article>
+    <article class="stat-card"><h3><%= totalOrders %></h3><p>Orders</p></article>
+    <article class="stat-card"><h3><%= totalUsers %></h3><p>Users</p></article>
+  </div>
+
+  <h2>Recent Products</h2>
+  <table class="data-table">
+    <thead><tr><th>Name</th><th>Price</th></tr></thead>
+    <tbody>
+      <% recentProducts.forEach(product => { %>
+        <tr>
+          <td><%= product.name %></td>
+          <td>$<%= product.price.toFixed(2) %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('partials/footer') %>

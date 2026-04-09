@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1>Order Preview</h1>
+
+  <div class="checkout-grid">
+    <div>
+      <h2>Customer</h2>
+      <p><strong>Name:</strong> <%= customer.name %></p>
+      <p><strong>Email:</strong> <%= customer.email %></p>
+      <p><strong>Phone:</strong> <%= customer.phone %></p>
+      <p><strong>Address:</strong> <%= customer.address %></p>
+      <p><strong>Plan:</strong> <%= plan === 'subscription' ? 'Weekly Subscription' : 'One-Time Order' %></p>
+
+      <h2>Items</h2>
+      <ul>
+        <% cartItems.forEach(item => { %>
+          <li><%= item.product.name %> x <%= item.quantity %> - $<%= item.lineTotal.toFixed(2) %></li>
+          <% if (item.selectedFlavours && item.selectedFlavours.length) { %>
+            <li class="muted">Custom: <%= item.scoopCount %>-flavour mix - <%= item.selectedFlavours.join(', ') %></li>
+          <% } %>
+        <% }) %>
+      </ul>
+    </div>
+
+    <aside>
+      <h2>Totals</h2>
+      <p>Subtotal: $<%= subtotal.toFixed(2) %></p>
+      <p>Tax: $<%= tax.toFixed(2) %></p>
+      <p>Shipping: $<%= shipping.toFixed(2) %></p>
+      <p>Discount: -$<%= discount.toFixed(2) %></p>
+      <% if (coupon) { %>
+        <p>Coupon Applied: <strong><%= coupon %></strong></p>
+      <% } %>
+      <p><strong>Total: $<%= total.toFixed(2) %></strong></p>
+
+      <form method="POST" action="/order/confirm">
+        <button type="submit" class="btn-primary">Confirm Order</button>
+      </form>
+    </aside>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

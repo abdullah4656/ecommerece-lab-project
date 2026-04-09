@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+<section>
+  <div class="admin-row">
+    <h1>Products</h1>
+    <a href="/admin/products/add" class="admin-btn">Add Product</a>
+  </div>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Rarity</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Status</th>
+        <th>SEO</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% products.forEach(product => { %>
+        <tr>
+          <td><%= product.name %></td>
+          <td><%= product.rarity %></td>
+          <td>$<%= product.price.toFixed(2) %></td>
+          <td><%= product.stock %></td>
+          <td><%= product.isActive ? 'Active' : 'Hidden' %></td>
+          <td><%= product.seoTitle || product.seoDescription ? 'Configured' : 'Missing' %></td>
+          <td>
+            <a href="/admin/products/<%= product._id %>/edit">Edit</a>
+            <form method="POST" action="/admin/products/<%= product._id %>/delete" class="inline-form">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('partials/footer') %>
+

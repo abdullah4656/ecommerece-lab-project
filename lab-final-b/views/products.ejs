@@ -1,0 +1,71 @@
+<%- include('partials/header') %>
+
+<section class="builder-hero">
+  <div class="container">
+    <h1>Select your dream coat</h1>
+    <p>Discover premium products, compare flavour profiles, and move confidently from selection to checkout.</p>
+    
+  </div>
+</section>
+
+
+
+    <section id="boxConfigModal" class="box-modal" aria-hidden="true">
+      <div class="box-modal-backdrop" data-box-close-modal></div>
+      <div class="box-modal-card" role="dialog" aria-modal="true" aria-labelledby="boxModalTitle">
+        <div class="box-modal-head">
+          <h3 id="boxModalTitle">Customize Product</h3>
+          <button type="button" class="box-modal-close" data-box-close-modal aria-label="Close">x</button>
+        </div>
+        <p class="muted" id="boxModalProductName">Choose one base and your flavour mix.</p>
+
+        <div class="box-modal-section">
+          <h4>Choose Base (up to 1)</h4>
+          <div class="box-options-grid" id="boxBaseOptions"></div>
+        </div>
+
+        <div class="box-modal-section">
+          <h4 id="boxFlavourLimitLabel">Choose Flavours (up to 3)</h4>
+          <div class="box-options-grid" id="boxFlavourOptions"></div>
+        </div>
+
+        <p class="muted" id="boxModalStatus">Select 1 base and flavours to continue.</p>
+        <button type="button" id="boxModalConfirmBtn" class="btn-primary full-width" disabled>Add Product To Bundle</button>
+      </div>
+    </section>
+
+    <form method="GET" action="/products" class="filter-form">
+      <label>Search
+        <input type="text" name="q" value="<%= q || '' %>" placeholder="Search " />
+      </label>
+      <button type="submit" class="btn-primary">Apply Filters</button>
+      <a href="/products" class="btn-outline">Reset</a>
+    </form>
+
+    <div class="products-grid spacious">
+      <% if (products && products.length) { %>
+        <% products.forEach(product => { %>
+          <article class="product-card">
+            <img src="<%= product.image %>" alt="<%= product.name %>" class="product-image" />
+            <h3><%= product.name %></h3>
+            <p><strong>$<%= Number(product.price || 0).toFixed(2) %></strong></p>
+            <div class="wishlist-card-actions">
+              <a href="/products/<%= product._id %>" class="btn-primary">View Details</a>
+              <% if (currentUser) { %>
+                <form method="POST" action="/wishlist/add/<%= product._id %>" class="inline-form wishlist-card-form" data-product-id="<%= product._id %>">
+                  <button type="submit" class="wishlist-card-btn">Add to Wishlist</button>
+                </form>
+              <% } %>
+            </div>
+          </article>
+        <% }) %>
+      <% } else { %>
+        <article class="builder-card">
+          <h3>No Coats found</h3>
+          <p>Try another keyword or add products from admin dashboard.</p>
+        </article>
+      <% } %>
+    </div>
+
+
+<%- include('partials/footer') %>

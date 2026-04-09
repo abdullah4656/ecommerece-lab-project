@@ -1,0 +1,15 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1>Admin Sign In</h1>
+  <p>Default admin (if first run): admin@playcards.com / admin123</p>
+  <% if (error) { %><p class="error-text"><%= error %></p><% } %>
+
+  <form method="POST" action="/admin/signin" class="admin-form">
+    <label>Email <input type="email" name="email" required /></label>
+    <label>Password <input type="password" name="password" required /></label>
+    <button type="submit" class="admin-btn">Sign In</button>
+  </form>
+</section>
+
+<%- include('partials/footer') %>

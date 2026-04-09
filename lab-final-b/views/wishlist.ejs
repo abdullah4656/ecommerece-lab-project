@@ -1,0 +1,37 @@
+<%- include('partials/header') %>
+
+<section class="wishlist-page">
+  <div class="container">
+    <div class="wishlist-hero">
+      <h1>My Wishlist</h1>
+      <p>All your saved pints in one place. Review, remove, or jump straight to customization.</p>
+    </div>
+
+    <% if (!wishlistItems || wishlistItems.length === 0) { %>
+      <div class="wishlist-empty">
+        <h2>No saved pints yet</h2>
+        <p>Tap Add to Wishlist on any product and it will appear here.</p>
+        <a href="/products" class="btn-primary">Explore Products</a>
+      </div>
+    <% } else { %>
+      <div class="wishlist-grid">
+        <% wishlistItems.forEach(item => { %>
+          <article class="wishlist-card">
+            <img src="<%= item.product.image %>" alt="<%= item.product.name %>" class="product-image" />
+            <h3><%= item.product.name %></h3>
+            <p class="muted"><%= item.product.shortDescription || item.product.description %></p>
+            <p class="wishlist-price">$<%= item.product.price.toFixed(2) %></p>
+            <div class="wishlist-actions">
+              <a href="/products/<%= item.product._id %>" class="btn-primary">Customize</a>
+              <form method="POST" action="/wishlist/remove/<%= item.product._id %>">
+                <button type="submit" class="btn-outline btn-remove">Remove</button>
+              </form>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,107 @@
+<%- include('partials/header') %>
+
+<section class="cart-page">
+  <div class="container">
+    <h1 class="page-title">Your Cart</h1>
+
+    
+
+    <% if (!cartItems || cartItems.length === 0) { %>
+      <div class="cart-empty">
+        <h2>Your cart is empty</h2>
+        <p>Start adding your favorite pints and custom flavour mixes.</p>
+        <a href="/products" class="btn-primary">Browse Products</a>
+      </div>
+    <% } else { %>
+      <div class="cart-layout">
+        <div class="cart-items-panel">
+          <table class="data-table cart-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% cartItems.forEach(item => { %>
+                <tr>
+                  <td>
+                    <strong><%= item.product.name %></strong>
+                    <% if (item.selectedFlavours && item.selectedFlavours.length) { %>
+                      <p class="cart-custom muted"><strong>Custom:</strong> <%= item.scoopCount %>-flavour mix - <%= item.selectedFlavours.join(', ') %></p>
+                    <% } %>
+                  </td>
+                  <td>$<%= item.product.price.toFixed(2) %></td>
+                  <td>
+                    <form action="/cart/update" method="POST" class="inline-form cart-qty-form">
+                      <input type="hidden" name="productId" value="<%= item.product._id %>" />
+                      <input type="hidden" name="itemIndex" value="<%= item.itemIndex %>" />
+                      <input type="number" name="quantity" min="1" value="<%= item.quantity %>" />
+                      <button type="submit" class="btn-outline">Update</button>
+                    </form>
+                  </td>
+                  <td>$<%= item.itemTotal.toFixed(2) %></td>
+                  <td>
+                    <form action="/cart/remove" method="POST" class="inline-form">
+                      <input type="hidden" name="productId" value="<%= item.product._id %>" />
+                      <input type="hidden" name="itemIndex" value="<%= item.itemIndex %>" />
+                      <button type="submit" class="btn-outline btn-remove">Remove</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+
+        <aside class="cart-summary-card">
+          <h2>Order Total</h2>
+          <p><span>Subtotal</span> <strong>$<%= subtotal.toFixed(2) %></strong></p>
+          <p><span>Tax</span> <strong>$<%= tax.toFixed(2) %></strong></p>
+          <p><span>Shipping</span> <strong>$<%= shipping.toFixed(2) %></strong></p>
+          <hr />
+          <p class="total-row"><span>Total</span> <strong>$<%= total.toFixed(2) %></strong></p>
+          <a href="/checkout" class="btn-primary full-width">Proceed to Checkout</a>
+          <form action="/cart/clear" method="POST" class="inline-form full-width-form">
+            <button type="submit" class="btn-outline full-width">Clear Cart</button>
+          </form>
+          <p class="muted top-gap">Tip: Signed-in users can track all placed orders from My Orders.</p>
+        </aside>
+      </div>
+
+      <div class="builder-grid top-gap">
+        <article class="builder-card">
+          <h2>Checkout Readiness Checklist</h2>
+          <ul class="tick-list">
+            <li>Verify quantity and customization choices</li>
+            <li>Confirm shipping information in checkout</li>
+            <li>Choose one-time or subscription plan</li>
+            <li>Apply coupon code during checkout if available</li>
+          </ul>
+        </article>
+        <article class="builder-card">
+          <h2>Need More Choices?</h2>
+          <p>Continue shopping to add more flavor combinations before finalizing your order.</p>
+          <a href="/products" class="btn-outline">Continue Shopping</a>
+        </article>
+      </div>
+
+      <div class="builder-grid top-gap">
+        <article class="builder-card">
+          <h2>Cart FAQ</h2>
+          <p><strong>Can I update quantity?</strong><br />Yes, change quantity and click update directly in the cart table.</p>
+          <p><strong>Can I remove a custom item?</strong><br />Yes, remove uses product plus item index to remove exact customization.</p>
+        </article>
+        <article class="builder-card">
+          <h2>Professional Order Flow</h2>
+          <p>Cart -> Checkout -> Preview -> Place Order -> Track status in your signed-in account.</p>
+        </article>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

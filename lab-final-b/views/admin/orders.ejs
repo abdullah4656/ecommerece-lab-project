@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1>Orders</h1>
+
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Customer</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Update Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% orders.forEach(order => { %>
+        <tr>
+          <td><%= order._id %></td>
+          <td><%= order.customer.name %><br /><small><%= order.customer.email %></small></td>
+          <td>$<%= order.total.toFixed(2) %></td>
+          <td><strong><%= order.status %></strong></td>
+          <td>
+            <form method="POST" action="/admin/orders/<%= order._id %>/status" class="inline-form">
+              <select name="status">
+                <% ['Placed', 'Processing', 'Delivered'].forEach(s => { %>
+                  <option value="<%= s %>" <%= order.status === s ? 'selected' : '' %>><%= s %></option>
+                <% }) %>
+              </select>
+              <button type="submit">Save</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('partials/footer') %>

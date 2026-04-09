@@ -1,0 +1,22 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1>Order Placed Successfully</h1>
+  <p>Your order ID is <strong><%= order._id %></strong>.</p>
+  <p>Status: <strong><%= order.status %></strong></p>
+  <p>Plan: <strong><%= order.plan === 'subscription' ? 'Weekly Subscription' : 'One-Time Order' %></strong></p>
+  <p>Total Paid: <strong>$<%= order.total.toFixed(2) %></strong></p>
+
+  <h2>Tracking History</h2>
+  <ul>
+    <% (order.trackingHistory || []).forEach(entry => { %>
+      <li>
+        <strong><%= entry.status %></strong> - <%= entry.note %> (<%= new Date(entry.updatedAt).toLocaleString() %>)
+      </li>
+    <% }) %>
+  </ul>
+
+  <a href="/my-orders" class="btn-primary">View My Orders</a>
+</section>
+
+<%- include('partials/footer') %>

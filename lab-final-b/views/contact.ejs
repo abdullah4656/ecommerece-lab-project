@@ -1,0 +1,41 @@
+<%- include('partials/header') %>
+
+<section class="contact-section">
+  <div class="container">
+    <h1 class="page-title">Coat and Craft</h1>
+    <p class="page-subtitle">
+      Have questions about custom designs, appointments, or tailoring? Reach out and our team will gladly assist you.
+    </p>
+
+    <div class="contact-grid">
+      <article class="about-card">
+        <h3>Email</h3>
+        <p>hello@craftmycoat.com</p>
+
+        <h3>Phone</h3>
+        <p>+1 (555) 246-7812</p>
+
+        <h3>Studio Location</h3>
+        <p>14 Fashion Avenue, Tailor District</p>
+      </article>
+
+      <form class="builder-card contact-form" method="POST" action="#">
+        <label>Name
+          <input type="text" name="name" placeholder="Your name" />
+        </label>
+
+        <label>Email
+          <input type="email" name="email" placeholder="you@example.com" />
+        </label>
+
+        <label>Message
+          <textarea name="message" rows="5" placeholder="Tell us what you need..."></textarea>
+        </label>
+
+        <button type="button" class="btn-primary">Send Message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

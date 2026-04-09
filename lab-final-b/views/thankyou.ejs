@@ -1,0 +1,24 @@
+<%- include('partials/header') %>
+
+<section class="thankyou-section">
+  <div class="container">
+    <div class="builder-card thankyou-card">
+      <h1>Order Confirmed</h1>
+      <p>Thanks <strong><%= order.name %></strong>. Your custom pint request is now in our scoop queue.</p>
+      <p><strong>Plan:</strong> <%= order.plan === 'subscription' ? 'Weekly Subscription' : 'One-Time Order' %></p>
+      <p><strong>Pint Type:</strong> <%= order.tier %>-Flavour <%= order.tier === 4 ? 'Deluxe' : 'Classic' %></p>
+      <div class="flavour-chip-wrap">
+        <% order.selectedFlavours.forEach(flavour => { %>
+          <span class="flavour-chip"><%= flavour %></span>
+        <% }) %>
+      </div>
+      <p>Receipt sent to: <strong><%= order.email || 'No email provided' %></strong></p>
+      <div class="hero-actions">
+        <a href="/products" class="btn-primary">Build Another Pint</a>
+        <a href="/" class="btn-outline">Back to Home</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>
