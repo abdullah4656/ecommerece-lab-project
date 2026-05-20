@@ -1,4 +1,5 @@
 const express = require('express');
+const https = require('https');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
@@ -6,6 +7,7 @@ const Product = require('../models/Product');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const SeoSetting = require('../models/SeoSetting');
+const Blog = require('../models/Blog');
 const { requireAdmin } = require('../middleware/auth');
 
 function parseFlavourOptions(rawInput) {
@@ -28,6 +30,188 @@ function parseFlavourOptions(rawInput) {
     })
     .filter(Boolean);
 }
+
+function slugify(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+async function generateUniqueSlug(baseSlug, excludeId = null) {
+  let slug = baseSlug;
+  let count = 1;
+
+  const exists = async (candidateSlug) => {
+    const query = { slug: candidateSlug };
+    if (excludeId) {
+      query._id = { $ne: excludeId };
+    }
+    return await Blog.exists(query);
+  };
+
+  while (await exists(slug)) {
+    slug = `${baseSlug}-${count++}`;
+  }
+
+  return slug;
+}
+
+function callOpenAI(messages) {
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.OPENAI_API_KEY || process.env.GROK_API_KEY;
+    if (!apiKey) {
+      return reject(new Error('API key is not configured. Set OPENAI_API_KEY or GROK_API_KEY.'));
+    }
+
+    const useGrok = Boolean(process.env.GROK_API_KEY);
+    const endpoint = useGrok
+      ? process.env.GROK_API_URL || 'https://api.grok.com/v1/chat/completions'
+      : process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
+    const model = useGrok
+      ? process.env.GROK_MODEL || 'grok-1.5'
+      : process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+
+    const payload = JSON.stringify({
+      model,
+      messages,
+      temperature: 0.8,
+      max_tokens: 650
+    });
+
+    const req = https.request(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          try {
+            const body = JSON.parse(data);
+            resolve(body.choices?.[0]?.message?.content || '');
+          } catch (err) {
+            reject(err);
+          }
+        } else {
+          reject(new Error(`OpenAI request failed: ${res.statusCode} ${data}`));
+        }
+      });
+    });
+
+    req.on('error', (err) => {
+      if (useGrok && err.code === 'ENOTFOUND') {
+        return reject(
+          new Error(
+            `${err.message}. Could not resolve the Grok host. If you are using a custom endpoint, set GROK_API_URL in your environment, for example https://api.grok.com/v1/chat/completions.`
+          )
+        );
+      }
+      reject(err);
+    });
+    req.write(payload);
+    req.end();
+  });
+}
+
+async function generateSeoFields(name, description, shortDescription) {
+  if (!name && !description && !shortDescription) {
+    return {
+      seoTitle: '',
+      seoDescription: '',
+      seoKeywords: ''
+    };
+  }
+
+  const aiApiKey = process.env.OPENAI_API_KEY || process.env.GROK_API_KEY;
+  if (!aiApiKey) {
+    const seoTitle = `${name || 'Custom Product'} | ScoopCraft`;
+    const seoDescription = shortDescription || (description || '').slice(0, 150);
+    const seoKeywords = `${name || 'custom product'}, custom coats, personalised coats, premium outerwear`;
+    return { seoTitle, seoDescription, seoKeywords };
+  }
+
+  const prompt = `Create SEO fields for an ecommerce product page. Return only valid JSON with keys: seoTitle, seoDescription, seoKeywords. Keep seoTitle under 60 characters, seoDescription under 160 characters, and seoKeywords as comma-separated keyword phrases. Product name: ${name}. Description: ${description}. Short description: ${shortDescription}.`;
+
+  try {
+    const raw = await callOpenAI([
+      { role: 'system', content: 'You are an SEO copywriting assistant for an ecommerce storefront.' },
+      { role: 'user', content: prompt }
+    ]);
+    const json = raw.trim().replace(/^[^\{]*/, '').replace(/[^\}]*$/, '');
+    const data = JSON.parse(json);
+    return {
+      seoTitle: data.seoTitle || `${name || 'Custom Product'} | ScoopCraft`,
+      seoDescription: data.seoDescription || shortDescription || (description || '').slice(0, 150),
+      seoKeywords: data.seoKeywords || `${name || 'custom product'}, custom coats, personalised coats, premium outerwear`
+    };
+  } catch (error) {
+    console.error('SEO generation error:', error.message || error);
+    return {
+      seoTitle: `${name || 'Custom Product'} | ScoopCraft`,
+      seoDescription: shortDescription || (description || '').slice(0, 150),
+      seoKeywords: `${name || 'custom product'}, custom coats, personalised coats, premium outerwear`
+    };
+  }
+}
+
+async function generateBlogDraft(topic) {
+  const aiApiKey = process.env.OPENAI_API_KEY || process.env.GROK_API_KEY;
+  if (!aiApiKey) {
+    const title = topic ? `How to style ${topic}` : 'A guide to custom coat personalization';
+    const excerpt = `Learn how to make the most of your custom coat with our expert tips on personalization and styling.`;
+    const content = `Create a standout look with a tailored coat customized to your tastes. ${excerpt} Build your own unique coat with premium fabrics, embroidery, and thoughtful details.
+
+A custom coat should fit your body and your style. Choose the right lining, collar, and buttons to keep your design elevated. Add monogramming or special finishes to make it personal.
+
+Don’t forget to consider durability, comfort, and how your coat will travel from daytime to evening. A well-made custom coat will feel beautiful while making a memorable impression.`;
+    return {
+      title,
+      excerpt,
+      content,
+      tags: ['custom', 'styling', 'tailoring'],
+      author: 'AI Assistant'
+    };
+  }
+
+  const prompt = `Write a blog post draft for a custom clothing storefront. Return only valid JSON with title, excerpt, content, tags, and author. The blog topic is: ${topic}`;
+
+  try {
+    const raw = await callOpenAI([
+      { role: 'system', content: 'You are a blog writing assistant for a custom clothing store.' },
+      { role: 'user', content: prompt }
+    ]);
+    const json = raw.trim().replace(/^[^\{]*/, '').replace(/[^\}]*$/, '');
+    const data = JSON.parse(json);
+    return {
+      title: data.title || `Custom Coat Ideas for ${topic}`,
+      excerpt: data.excerpt || '',
+      content: data.content || '',
+      tags: Array.isArray(data.tags) ? data.tags : String(data.tags || '').split(',').map((tag) => tag.trim()).filter(Boolean),
+      author: data.author || 'AI Assistant'
+    };
+  } catch (error) {
+    console.error('Blog generation error:', error.message || error);
+    return {
+      title: topic ? `Custom Coat Guide: ${topic}` : 'Custom Coat Personalization Tips',
+      excerpt: 'Explore custom coat styling tips, personalization ideas, and how to set your look apart with tailored outerwear.',
+      content: `Customize your coat with premium fabrics, embroidered details, and tailored finishes. Use your product choices to create a one-of-a-kind silhouette.
+
+Think about how the coat should feel, fit, and move. A custom coat should reflect your personal style and the occasions you wear it for.
+
+Add finishing touches like special lining, monogramming, and custom buttons for a refined final result.`,
+      tags: ['custom coats', 'style', 'personalization'],
+      author: 'AI Assistant'
+    };
+  }
+}
+
 async function ensureDefaultAdmin() {
   const defaultEmail = 'admin@customizedcoats.com';
   const defaultPassword = 'admin123';
@@ -158,6 +342,175 @@ router.post('/signout', (req, res) => {
 });
 
 router.use(requireAdmin);
+
+router.get('/blogs', async (req, res) => {
+  try {
+    const blogs = await Blog.find().sort({ createdAt: -1 });
+    res.render('admin/blogs', {
+      title: 'Manage Blogs | Admin',
+      blogs
+    });
+  } catch (error) {
+    console.error('Error loading blogs:', error);
+    res.status(500).render('admin/error', {
+      title: 'Error | Admin',
+      message: 'Failed to load blogs'
+    });
+  }
+});
+
+router.get('/blogs/add', async (req, res) => {
+  try {
+    res.render('admin/blog-form', {
+      title: 'Add New Blog Post | Admin',
+      blog: null,
+      formAction: '/admin/blogs',
+      submitText: 'Create Post',
+      editMode: false
+    });
+  } catch (error) {
+    console.error('Error loading blog form:', error);
+    res.status(500).render('admin/error', {
+      title: 'Error | Admin',
+      message: 'Failed to load blog form'
+    });
+  }
+});
+
+router.post('/blogs', async (req, res) => {
+  try {
+    const { title, excerpt, content, tags, author, isPublished, generatedByAI } = req.body;
+    const baseSlug = slugify(title || `${Date.now()}`);
+    const slug = await generateUniqueSlug(baseSlug);
+    const tagList = String(tags || '').split(',').map((tag) => tag.trim()).filter(Boolean);
+
+    await Blog.create({
+      title,
+      slug,
+      excerpt,
+      content,
+      tags: tagList,
+      author: author || 'Admin',
+      isPublished: isPublished === 'on',
+      generatedByAI: generatedByAI === 'true'
+    });
+
+    res.redirect('/admin/blogs');
+  } catch (error) {
+    console.error('Error creating blog post:', error);
+    res.status(500).render('admin/error', {
+      title: 'Error | Admin',
+      message: 'Failed to create blog post'
+    });
+  }
+});
+
+router.post('/blogs/generate-ai', async (req, res) => {
+  try {
+    const { topic } = req.body;
+    const blog = await generateBlogDraft(topic);
+    res.json({ success: true, blog });
+  } catch (error) {
+    console.error('Error generating AI blog draft:', error);
+    res.json({ success: false, error: 'Could not generate AI blog content.' });
+  }
+});
+
+router.get('/blogs/:id/edit', async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).render('admin/error', {
+        title: 'Not Found | Admin',
+        message: 'Blog post not found'
+      });
+    }
+
+    res.render('admin/blog-form', {
+      title: 'Edit Blog Post | Admin',
+      blog,
+      formAction: `/admin/blogs/${blog._id}`,
+      submitText: 'Update Post',
+      editMode: true
+    });
+  } catch (error) {
+    console.error('Error loading blog post for edit:', error);
+    res.status(500).render('admin/error', {
+      title: 'Error | Admin',
+      message: 'Failed to load blog post'
+    });
+  }
+});
+
+router.post('/blogs/:id', async (req, res) => {
+  try {
+    const { title, excerpt, content, tags, author, isPublished, generatedByAI } = req.body;
+    const tagList = String(tags || '').split(',').map((tag) => tag.trim()).filter(Boolean);
+    const baseSlug = slugify(title || `${Date.now()}`);
+    const slug = await generateUniqueSlug(baseSlug, req.params.id);
+
+    const blog = await Blog.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        excerpt,
+        content,
+        tags: tagList,
+        author: author || 'Admin',
+        isPublished: isPublished === 'on',
+        generatedByAI: generatedByAI === 'true',
+        slug
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!blog) {
+      return res.status(404).render('admin/error', {
+        title: 'Not Found | Admin',
+        message: 'Blog post not found'
+      });
+    }
+
+    res.redirect('/admin/blogs');
+  } catch (error) {
+    console.error('Error updating blog post:', error);
+    res.status(500).render('admin/error', {
+      title: 'Error | Admin',
+      message: 'Failed to update blog post'
+    });
+  }
+});
+
+router.post('/blogs/:id/delete', async (req, res) => {
+  try {
+    const blog = await Blog.findByIdAndDelete(req.params.id);
+    if (!blog) {
+      return res.status(404).render('admin/error', {
+        title: 'Not Found | Admin',
+        message: 'Blog post not found'
+      });
+    }
+
+    res.redirect('/admin/blogs');
+  } catch (error) {
+    console.error('Error deleting blog post:', error);
+    res.status(500).render('admin/error', {
+      title: 'Error | Admin',
+      message: 'Failed to delete blog post'
+    });
+  }
+});
+
+router.post('/products/ai-seo', async (req, res) => {
+  try {
+    const { name, description, shortDescription } = req.body;
+    const seo = await generateSeoFields(name, description, shortDescription);
+    res.json({ success: true, ...seo });
+  } catch (error) {
+    console.error('Error generating SEO fields:', error);
+    res.json({ success: false, error: 'Could not generate SEO fields.' });
+  }
+});
 
 router.get('/', async (req, res) => {
   try {

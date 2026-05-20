@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
@@ -7,38 +8,61 @@ const SeoSetting = require('./models/SeoSetting');
 const { loadCurrentUser } = require('./middleware/auth');
 
 const app = express();
-const PORT = process.env.PORT || 3004;
 
-// MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/customized-coats';
-mongoose.connect(MONGODB_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.error('MongoDB connection error:', err);
-  });
+const PORT = process.env.PORT || 8000;
+const SESSION_SECRET = process.env.SESSION_SECRET || 'scoopcraft-dev-secret';
 
-// View engine setup
+app.set('trust proxy', 1);
+
+// =========================
+// MongoDB Connection
+// =========================
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  process.env.DATABASE_URL ||
+  process.env.MONGO_URL ||
+  'mongodb://localhost:27017/customized-coats';
+
+mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB connected');
+});
+
+mongoose.connection.on('error', (err) => {
+  console.error('❌ MongoDB error:', err.message);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠️ MongoDB disconnected');
+});
+
+// =========================
+// Express Config
+// =========================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Body parser middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// =========================
+// Session
+// =========================
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'scoopcraft-dev-secret',
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
     }
   })
 );
 
-// Helmet security + SEO-friendly response headers.
+// =========================
+// Security
+// =========================
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -54,14 +78,19 @@ app.use(
   })
 );
 
-// Static files
+// =========================
+// Static + Middleware
+// =========================
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(loadCurrentUser);
 
-// Inject SEO defaults for all page renders.
+// =========================
+// SEO Middleware
+// =========================
 app.use(async (req, res, next) => {
   try {
     const setting = await SeoSetting.findOne().lean();
+
     res.locals.seo = {
       siteTitle: setting?.siteTitle || 'ScoopCraft Pints',
       titleSeparator: setting?.titleSeparator || '|',
@@ -69,39 +98,46 @@ app.use(async (req, res, next) => {
         setting?.metaDescription ||
         'Build custom 3-flavour and 4-flavour artisan ice cream pints with one-time or subscription delivery.',
       metaKeywords:
-        setting?.metaKeywords || 'custom ice cream pints, flavour builder, artisan dessert, pint subscription',
+        setting?.metaKeywords ||
+        'custom ice cream pints, flavour builder, artisan dessert, pint subscription',
       canonicalBaseUrl: setting?.canonicalBaseUrl || '',
       robots: setting?.robots || 'index, follow',
       ogImage: setting?.ogImage || '/assets/blackseamer-honey-pint.jpg',
       twitterCard: setting?.twitterCard || 'summary_large_image'
     };
 
-    const baseUrl = (res.locals.seo.canonicalBaseUrl || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '');
+    const baseUrl = (
+      res.locals.seo.canonicalBaseUrl ||
+      `${req.protocol}://${req.get('host')}`
+    ).replace(/\/$/, '');
+
     res.locals.seo.currentUrl = `${baseUrl}${req.originalUrl || ''}`;
+
     res.locals.seo.ogImageUrl =
-      res.locals.seo.ogImage && /^https?:\/\//i.test(res.locals.seo.ogImage)
+      /^https?:\/\//i.test(res.locals.seo.ogImage)
         ? res.locals.seo.ogImage
-        : `${baseUrl}${res.locals.seo.ogImage || '/assets/blackseamer-honey-pint.jpg'}`;
+        : `${baseUrl}${res.locals.seo.ogImage}`;
   } catch (error) {
     res.locals.seo = {
       siteTitle: 'ScoopCraft Pints',
       titleSeparator: '|',
-      metaDescription: 'Build custom 3-flavour and 4-flavour artisan ice cream pints with one-time or subscription delivery.',
-      metaKeywords: 'custom ice cream pints, flavour builder, artisan dessert, pint subscription',
+      metaDescription:
+        'Build custom 3-flavour and 4-flavour artisan ice cream pints with one-time or subscription delivery.',
+      metaKeywords:
+        'custom ice cream pints, flavour builder, artisan dessert, pint subscription',
       canonicalBaseUrl: '',
       robots: 'index, follow',
       ogImage: '/assets/blackseamer-honey-pint.jpg',
       twitterCard: 'summary_large_image'
     };
-
-    const fallbackBaseUrl = `${req.protocol}://${req.get('host')}`;
-    res.locals.seo.currentUrl = `${fallbackBaseUrl}${req.originalUrl || ''}`;
-    res.locals.seo.ogImageUrl = `${fallbackBaseUrl}/assets/blackseamer-honey-pint.jpg`;
   }
+
   next();
 });
 
+// =========================
 // Routes
+// =========================
 const mainRoutes = require('./routes/index');
 const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
@@ -116,15 +152,27 @@ app.use('/cart', cartRoutes);
 app.use('/order', orderRoutes);
 app.use('/wishlist', wishlistRoutes);
 
-// 404 handler
+// =========================
+// 404 Handler
+// =========================
 app.use((req, res) => {
   res.status(404).render('404', {
-    title: 'Page Not Found | ScoopCraft',
+    title: 'Page Not Found | ScoopCraft'
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`ScoopCraft Pints running at http://localhost:${PORT}`);
-});
+// =========================
+// START SERVER ONLY AFTER DB CONNECTS
+// =========================
+mongoose
+  .connect(MONGODB_URI)
+  .then(() => {
+    console.log('🚀 Server starting...');
 
-
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
+  });

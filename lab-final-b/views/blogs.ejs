@@ -1,0 +1,25 @@
+<%- include('partials/header') %>
+
+<section class="page-section">
+  <div class="container">
+    <h1>Latest Articles</h1>
+    <p>Discover tips, inspiration, and stories about custom styling, personalization, and product highlights.</p>
+
+    <div class="blog-list">
+      <% if (blogs && blogs.length) { %>
+        <% blogs.forEach((blog) => { %>
+          <article class="blog-card">
+            <h2><a href="/blogs/<%= blog.slug %>"><%= blog.title %></a></h2>
+            <p class="meta"><%= new Date(blog.createdAt).toLocaleDateString() %> &bull; <%= blog.author %><% if (blog.generatedByAI) { %> &bull; AI draft<% } %></p>
+            <p><%= blog.excerpt %></p>
+            <p><a class="btn-primary" href="/blogs/<%= blog.slug %>">Read More</a></p>
+          </article>
+        <% }); %>
+      <% } else { %>
+        <p>No blog posts are available at the moment. Check back soon.</p>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

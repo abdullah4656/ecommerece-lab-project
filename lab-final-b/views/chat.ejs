@@ -1,0 +1,66 @@
+<%- include('partials/header') %>
+
+<section class="page-section page-chat">
+  <div class="container">
+    <h1>AI Chat Assistant</h1>
+    <p>Ask about products, personalization, shipping, order support, or blog ideas.</p>
+
+    <div class="chat-page-panel">
+      <div id="chatPageBody" class="chat-page-body"></div>
+      <form id="chatPageForm" class="chat-page-form">
+        <input id="chatPageInput" type="text" placeholder="Ask a question or describe a product idea..." autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  const form = document.getElementById('chatPageForm');
+  const input = document.getElementById('chatPageInput');
+  const body = document.getElementById('chatPageBody');
+
+  if (!form || !input || !body) return;
+
+  function appendMessage(role, text) {
+    const row = document.createElement('div');
+    row.className = 'chat-page-message ' + role;
+    row.innerHTML = '<p>' + text.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>';
+    body.appendChild(row);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  async function sendQuestion(question) {
+    appendMessage('user', question);
+    appendMessage('assistant', 'Thinking...');
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question })
+      });
+
+      const result = await response.json();
+      const answer = result.answer || 'Sorry, I could not answer that at the moment.';
+      const placeholder = body.querySelector('.chat-page-message.assistant:last-child');
+      if (placeholder) {
+        placeholder.innerHTML = '<p>' + answer.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</p>';
+      }
+    } catch (error) {
+      appendMessage('assistant', 'Sorry, I could not connect to the chat service.');
+    }
+  }
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    sendQuestion(text);
+  });
+})();
+</script>
+
+<%- include('partials/footer') %>

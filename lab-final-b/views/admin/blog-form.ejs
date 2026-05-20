@@ -1,0 +1,68 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1><%= editMode ? 'Edit Blog Post' : 'Create Blog Post' %></h1>
+
+  <form id="blogForm" method="POST" action="<%= formAction %>" class="admin-form">
+    <label>Title <input type="text" name="title" value="<%= blog ? blog.title : '' %>" required /></label>
+    <label>Excerpt <textarea name="excerpt" rows="3"><%= blog ? (blog.excerpt || '') : '' %></textarea></label>
+    <label>Content <textarea name="content" rows="10" required><%= blog ? blog.content : '' %></textarea></label>
+    <label>Tags (comma separated) <input type="text" name="tags" value="<%= blog ? (blog.tags || []).join(', ') : '' %>" /></label>
+    <label>Author <input type="text" name="author" value="<%= blog ? (blog.author || 'Admin') : 'Admin' %>" /></label>
+    <label>
+      <input type="checkbox" name="isPublished" <%= blog && blog.isPublished ? 'checked' : (!blog ? 'checked' : '') %> /> Publish now
+    </label>
+    <input type="hidden" name="generatedByAI" value="<%= blog ? blog.generatedByAI : false %>" />
+
+    <div class="admin-actions">
+      <button type="button" id="generateBlogAI" class="btn-secondary">Generate Draft with AI</button>
+      <button type="submit" class="btn-primary"><%= submitText %></button>
+    </div>
+  </form>
+</section>
+
+<script>
+(function () {
+  const generateBtn = document.getElementById('generateBlogAI');
+  const form = document.getElementById('blogForm');
+  if (!generateBtn || !form) return;
+
+  generateBtn.addEventListener('click', async function () {
+    const titleInput = form.querySelector('input[name="title"]');
+    const excerptInput = form.querySelector('textarea[name="excerpt"]');
+    const contentInput = form.querySelector('textarea[name="content"]');
+    const tagsInput = form.querySelector('input[name="tags"]');
+    const authorInput = form.querySelector('input[name="author"]');
+
+    const topic = titleInput.value.trim() || 'Custom coats and personalization tips';
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Generating...';
+
+    try {
+      const response = await fetch('/admin/blogs/generate-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic })
+      });
+      const result = await response.json();
+      if (result.success) {
+        titleInput.value = result.blog.title || titleInput.value;
+        excerptInput.value = result.blog.excerpt || excerptInput.value;
+        contentInput.value = result.blog.content || contentInput.value;
+        tagsInput.value = result.blog.tags ? result.blog.tags.join(', ') : tagsInput.value;
+        authorInput.value = result.blog.author || authorInput.value;
+        form.querySelector('input[name="generatedByAI"]').value = 'true';
+      } else {
+        alert(result.error || 'Unable to generate blog content.');
+      }
+    } catch (error) {
+      alert('AI blog generation service is unavailable.');
+    } finally {
+      generateBtn.disabled = false;
+      generateBtn.textContent = 'Generate Draft with AI';
+    }
+  });
+})();
+</script>
+
+<%- include('partials/footer') %>

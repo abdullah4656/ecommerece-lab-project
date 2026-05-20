@@ -518,6 +518,136 @@ justify-content: center;
     color: var(--muted);
 }
 
+.page-section {
+    padding: 64px 0;
+}
+
+.blog-list {
+    display: grid;
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.blog-card,
+.blog-detail {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+}
+
+.blog-card h2 {
+    margin-bottom: 12px;
+    font-size: 1.6rem;
+}
+
+.blog-card p {
+    color: var(--muted);
+    margin-bottom: 12px;
+}
+
+.blog-card .meta,
+.blog-detail .meta {
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+}
+
+.blog-detail .excerpt {
+    margin-bottom: 22px;
+    color: var(--muted);
+    font-style: italic;
+}
+
+.blog-detail .content {
+    line-height: 1.8;
+    color: #222;
+}
+
+.blog-detail .tags {
+    margin-top: 24px;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.chat-page-panel {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    box-shadow: var(--shadow);
+}
+
+.chat-page-body {
+    min-height: 320px;
+    max-height: 520px;
+    overflow-y: auto;
+    border: 1px solid #e6e6e6;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 18px;
+    background: #fbfbfb;
+}
+
+.chat-page-message {
+    padding: 14px 18px;
+    border-radius: 18px;
+    margin-bottom: 12px;
+    max-width: 85%;
+}
+
+.chat-page-message.user {
+    background: #f1f1f1;
+    margin-left: auto;
+    text-align: right;
+}
+
+.chat-page-message.assistant {
+    background: #8b0000;
+    color: #fff;
+    margin-right: auto;
+}
+
+.chat-page-form {
+    display: flex;
+    gap: 12px;
+}
+
+.chat-page-form input {
+    flex: 1;
+    padding: 14px 18px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.chat-page-form button {
+    padding: 14px 22px;
+    border: none;
+    border-radius: 10px;
+    background: #8b0000;
+    color: #fff;
+    cursor: pointer;
+}
+
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 18px 0;
+}
+
+.btn-secondary {
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+
 .steps-wrap {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

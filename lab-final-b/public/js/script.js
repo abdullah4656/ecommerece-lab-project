@@ -801,12 +801,26 @@ function setupChatbotWidget() {
 
   function replyWithTyping(text) {
     const typingNode = appendMessage('chatbot-typing', 'Assistant is typing...');
-    setTimeout(() => {
-      if (typingNode && typingNode.parentNode) {
-        typingNode.parentNode.removeChild(typingNode);
-      }
-      appendMessage('bot', getReply(text));
-    }, 400);
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ question: text })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (typingNode && typingNode.parentNode) {
+          typingNode.parentNode.removeChild(typingNode);
+        }
+        appendMessage('bot', data.answer || getReply(text));
+      })
+      .catch(() => {
+        if (typingNode && typingNode.parentNode) {
+          typingNode.parentNode.removeChild(typingNode);
+        }
+        appendMessage('bot', getReply(text));
+      });
   }
 
   function askQuestion(text) {

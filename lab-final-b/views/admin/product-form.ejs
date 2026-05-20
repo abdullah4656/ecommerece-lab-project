@@ -33,9 +33,50 @@
     <label>Meta Robots <input type="text" name="metaRobots" value="<%= product ? (product.metaRobots || 'index, follow') : 'index, follow' %>" /></label>
     <label>Canonical URL <input type="url" name="canonicalUrl" value="<%= product ? (product.canonicalUrl || '') : '' %>" /></label>
 
-    <button type="submit" class="admin-btn"><%= submitText %></button>
+    <div class="admin-actions">
+      <button type="button" id="generateSeoAI" class="btn-secondary">Generate SEO with AI</button>
+      <button type="submit" class="admin-btn"><%= submitText %></button>
+    </div>
   </form>
 </section>
+
+<script>
+(function () {
+  const button = document.getElementById('generateSeoAI');
+  const form = document.querySelector('form');
+  if (!button || !form) return;
+
+  button.addEventListener('click', async function () {
+    button.disabled = true;
+    button.textContent = 'Generating...';
+
+    const name = form.querySelector('input[name="name"]').value.trim();
+    const description = form.querySelector('textarea[name="description"]').value.trim();
+    const shortDescription = form.querySelector('input[name="shortDescription"]').value.trim();
+
+    try {
+      const response = await fetch('/admin/products/ai-seo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, shortDescription })
+      });
+      const data = await response.json();
+      if (data.success) {
+        form.querySelector('input[name="seoTitle"]').value = data.seoTitle || form.querySelector('input[name="seoTitle"]').value;
+        form.querySelector('textarea[name="seoDescription"]').value = data.seoDescription || form.querySelector('textarea[name="seoDescription"]').value;
+        form.querySelector('input[name="seoKeywords"]').value = data.seoKeywords || form.querySelector('input[name="seoKeywords"]').value;
+      } else {
+        alert(data.error || 'Unable to generate SEO content.');
+      }
+    } catch (error) {
+      alert('AI SEO service is unavailable.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Generate SEO with AI';
+    }
+  });
+})();
+</script>
 
 <%- include('partials/footer') %>
 

@@ -1,0 +1,18 @@
+<%- include('partials/header') %>
+
+<section class="page-section">
+  <div class="container">
+    <article class="blog-detail">
+      <h1><%= blog.title %></h1>
+      <p class="meta"><%= new Date(blog.createdAt).toLocaleDateString() %> &bull; <%= blog.author %><% if (blog.generatedByAI) { %> &bull; AI assisted<% } %></p>
+      <p class="excerpt"><%= blog.excerpt %></p>
+      <div class="content"><%- blog.content.replace(/\n/g, '<br/>') %></div>
+      <% if (blog.tags && blog.tags.length) { %>
+        <p class="tags">Tags: <%= blog.tags.join(', ') %></p>
+      <% } %>
+      <p><a href="/blogs" class="btn-outline">Back to Blog</a></p>
+    </article>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

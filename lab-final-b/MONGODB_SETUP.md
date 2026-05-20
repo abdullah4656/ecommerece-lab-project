@@ -3,7 +3,7 @@
 ## Current Configuration
 
 Your application is already configured to connect to MongoDB at:
-- **Connection String**: `mongodb://localhost:27017/scoopcraft-store`
+- **Connection String**: `mongodb://mongodb+srv://abdullahyasin5580:<db_password>@cluster0.lluvhol.mongodb.net/?appName=Cluster0/scoopcraft-store`
 - **Database Name**: `scoopcraft-store`
 - **Default Port**: `27017`
 

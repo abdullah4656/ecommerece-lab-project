@@ -1,0 +1,39 @@
+<%- include('partials/header') %>
+
+<section>
+  <h1>Blog Management</h1>
+  <p><a href="/admin/blogs/add" class="btn-primary">Create New Blog Post</a></p>
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Status</th>
+        <th>AI Draft</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (blogs && blogs.length) { %>
+        <% blogs.forEach((blog) => { %>
+          <tr>
+            <td><%= blog.title %></td>
+            <td><%= blog.isPublished ? 'Published' : 'Draft' %></td>
+            <td><%= blog.generatedByAI ? 'Yes' : 'No' %></td>
+            <td><%= new Date(blog.createdAt).toLocaleDateString() %></td>
+            <td>
+              <a href="/admin/blogs/<%= blog._id %>/edit" class="btn-outline">Edit</a>
+              <form action="/admin/blogs/<%= blog._id %>/delete" method="POST" class="inline-form" onsubmit="return confirm('Delete this blog post?');">
+                <button type="submit" class="btn-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      <% } else { %>
+        <tr><td colspan="5">No blog posts created yet.</td></tr>
+      <% } %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('partials/footer') %>
