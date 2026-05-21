@@ -9,6 +9,7 @@ const User = require('../models/User');
 const SeoSetting = require('../models/SeoSetting');
 const Blog = require('../models/Blog');
 const { requireAdmin } = require('../middleware/auth');
+const brand = require('../config/brand');
 
 function parseFlavourOptions(rawInput) {
   const lines = String(rawInput || '')
@@ -57,6 +58,81 @@ async function generateUniqueSlug(baseSlug, excludeId = null) {
   return slug;
 }
 
+function escapeControlCharsInJsonStrings(json) {
+  let result = '';
+  let inString = false;
+  let escaped = false;
+
+  for (let i = 0; i < json.length; i++) {
+    const ch = json[i];
+
+    if (!inString) {
+      result += ch;
+      if (ch === '"') {
+        inString = true;
+      }
+      continue;
+    }
+
+    if (escaped) {
+      result += ch;
+      escaped = false;
+      continue;
+    }
+
+    if (ch === '\\') {
+      result += ch;
+      escaped = true;
+      continue;
+    }
+
+    if (ch === '"') {
+      result += ch;
+      inString = false;
+      continue;
+    }
+
+    if (ch === '\n') {
+      result += '\\n';
+    } else if (ch === '\r') {
+      result += '\\r';
+    } else if (ch === '\t') {
+      result += '\\t';
+    } else if (ch.charCodeAt(0) < 32) {
+      result += `\\u${ch.charCodeAt(0).toString(16).padStart(4, '0')}`;
+    } else {
+      result += ch;
+    }
+  }
+
+  return result;
+}
+
+function parseAiJsonResponse(raw) {
+  let text = String(raw || '').trim();
+  text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start < 0 || end <= start) {
+    throw new Error('AI response did not contain a JSON object.');
+  }
+
+  text = text.slice(start, end + 1);
+
+  try {
+    return JSON.parse(text);
+  } catch (firstError) {
+    try {
+      return JSON.parse(escapeControlCharsInJsonStrings(text));
+    } catch (secondError) {
+      const err = new Error(`Could not parse AI JSON: ${firstError.message}`);
+      err.cause = secondError;
+      throw err;
+    }
+  }
+}
+
 function callOpenAI(messages) {
   return new Promise((resolve, reject) => {
     const apiKey = process.env.OPENAI_API_KEY || process.env.GROK_API_KEY;
@@ -65,19 +141,38 @@ function callOpenAI(messages) {
     }
 
     const useGrok = Boolean(process.env.GROK_API_KEY);
-    const endpoint = useGrok
-      ? process.env.GROK_API_URL || 'https://api.grok.com/v1/chat/completions'
-      : process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
+    // Allow users to set either a full request URL or a base URL. Normalize to the
+    // expected chat completions path so providers with different URL formats work.
+    const rawUrl = useGrok ? process.env.GROK_API_URL : process.env.OPENAI_API_URL;
+    const defaultBase = useGrok ? 'https://api.groq.com/openai/v1' : 'https://api.openai.com';
+    const base = (rawUrl || defaultBase).trim().replace(/\/+$/g, '');
+    // If the URL already contains 'chat/completions', use it as-is.
+    // Groq and other OpenAI-compatible bases often end with /v1 — append /chat/completions only.
+    let endpoint;
+    if (/chat\/completions/.test(base)) {
+      endpoint = base;
+    } else if (/\/v1$/i.test(base)) {
+      endpoint = `${base}/chat/completions`;
+    } else {
+      endpoint = `${base}/v1/chat/completions`;
+    }
+    const defaultGrokModel = /groq\.com/i.test(endpoint)
+      ? 'llama-3.3-70b-versatile'
+      : 'grok-2-latest';
     const model = useGrok
-      ? process.env.GROK_MODEL || 'grok-1.5'
+      ? process.env.GROK_MODEL || defaultGrokModel
       : process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
 
-    const payload = JSON.stringify({
+    const payloadObj = {
       model,
-      messages,
       temperature: 0.8,
-      max_tokens: 650
-    });
+      max_tokens: 650,
+      messages: Array.isArray(messages)
+        ? messages
+        : [{ role: 'user', content: String(messages || '') }]
+    };
+
+    const payload = JSON.stringify(payloadObj);
 
     const req = https.request(endpoint, {
       method: 'POST',
@@ -95,12 +190,53 @@ function callOpenAI(messages) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           try {
             const body = JSON.parse(data);
-            resolve(body.choices?.[0]?.message?.content || '');
+
+            // Try multiple common shapes for AI responses to support Grok/OpenAI and compatibles
+            const tryExtract = (obj) => {
+              if (!obj) return null;
+              // OpenAI chat format
+              if (obj.choices && Array.isArray(obj.choices) && obj.choices[0]) {
+                const c = obj.choices[0];
+                if (c.message && c.message.content) return c.message.content;
+                if (typeof c.text === 'string' && c.text) return c.text;
+              }
+              // Some providers put output in `output_text` or `output` fields
+              if (typeof obj.output_text === 'string' && obj.output_text) return obj.output_text;
+              if (obj.output && Array.isArray(obj.output) && obj.output[0]) {
+                const out = obj.output[0];
+                if (typeof out === 'string' && out) return out;
+                if (out.content && Array.isArray(out.content)) {
+                  const textPart = out.content.find((p) => p.type === 'output_text' || p.type === 'text');
+                  if (textPart && textPart.text) return textPart.text;
+                }
+              }
+              // Some APIs return data array
+              if (obj.data && Array.isArray(obj.data) && obj.data[0]) {
+                const d = obj.data[0];
+                if (d.text) return d.text;
+                if (d.content && typeof d.content === 'string') return d.content;
+              }
+              return null;
+            };
+
+            const extracted = tryExtract(body);
+            if (extracted != null) {
+              return resolve(extracted);
+            }
+
+            // As a last resort, if body contains any string-like content, return it
+            if (typeof body === 'string' && body) return resolve(body);
+
+            // If nothing found, include the full response for debugging
+            console.error('Unexpected AI response shape:', JSON.stringify(body));
+            return resolve('');
           } catch (err) {
-            reject(err);
+            console.error('Error parsing AI response:', err.message || err);
+            return reject(err);
           }
         } else {
-          reject(new Error(`OpenAI request failed: ${res.statusCode} ${data}`));
+          // Non-2xx — include body to help debugging
+          return reject(new Error(`AI request failed: ${res.statusCode} ${data}`));
         }
       });
     });
@@ -123,6 +259,8 @@ function callOpenAI(messages) {
 async function generateSeoFields(name, description, shortDescription) {
   if (!name && !description && !shortDescription) {
     return {
+      ok: false,
+      error: 'Product name or description is required.',
       seoTitle: '',
       seoDescription: '',
       seoKeywords: ''
@@ -131,10 +269,10 @@ async function generateSeoFields(name, description, shortDescription) {
 
   const aiApiKey = process.env.OPENAI_API_KEY || process.env.GROK_API_KEY;
   if (!aiApiKey) {
-    const seoTitle = `${name || 'Custom Product'} | ScoopCraft`;
+    const seoTitle = `${name || 'Custom Product'} | ${brand.name}`;
     const seoDescription = shortDescription || (description || '').slice(0, 150);
     const seoKeywords = `${name || 'custom product'}, custom coats, personalised coats, premium outerwear`;
-    return { seoTitle, seoDescription, seoKeywords };
+    return { ok: true, seoTitle, seoDescription, seoKeywords };
   }
 
   const prompt = `Create SEO fields for an ecommerce product page. Return only valid JSON with keys: seoTitle, seoDescription, seoKeywords. Keep seoTitle under 60 characters, seoDescription under 160 characters, and seoKeywords as comma-separated keyword phrases. Product name: ${name}. Description: ${description}. Short description: ${shortDescription}.`;
@@ -144,28 +282,69 @@ async function generateSeoFields(name, description, shortDescription) {
       { role: 'system', content: 'You are an SEO copywriting assistant for an ecommerce storefront.' },
       { role: 'user', content: prompt }
     ]);
-    const json = raw.trim().replace(/^[^\{]*/, '').replace(/[^\}]*$/, '');
-    const data = JSON.parse(json);
+    const data = parseAiJsonResponse(raw);
     return {
-      seoTitle: data.seoTitle || `${name || 'Custom Product'} | ScoopCraft`,
+      ok: true,
+      seoTitle: data.seoTitle || `${name || 'Custom Product'} | ${brand.name}`,
       seoDescription: data.seoDescription || shortDescription || (description || '').slice(0, 150),
       seoKeywords: data.seoKeywords || `${name || 'custom product'}, custom coats, personalised coats, premium outerwear`
     };
   } catch (error) {
     console.error('SEO generation error:', error.message || error);
     return {
-      seoTitle: `${name || 'Custom Product'} | ScoopCraft`,
+      ok: true,
+      seoTitle: `${name || 'Custom Product'} | ${brand.name}`,
       seoDescription: shortDescription || (description || '').slice(0, 150),
-      seoKeywords: `${name || 'custom product'}, custom coats, personalised coats, premium outerwear`
+      seoKeywords: `${name || 'custom product'}, custom coats, personalised coats, premium outerwear`,
+      warning: 'AI unavailable — using template SEO instead.'
+    };
+  }
+}
+
+async function generateSiteSeoFields(siteTitle, metaDescription, metaKeywords) {
+  const title = (siteTitle || brand.siteTitle).trim();
+  const description = (metaDescription || brand.metaDescription).trim();
+  const keywords = (metaKeywords || brand.metaKeywords).trim();
+
+  const aiApiKey = process.env.OPENAI_API_KEY || process.env.GROK_API_KEY;
+  if (!aiApiKey) {
+    return {
+      ok: true,
+      siteTitle: title,
+      metaDescription: description,
+      metaKeywords: keywords
+    };
+  }
+
+  const prompt = `Create global SEO settings for ${brand.name}, a custom coat and bespoke outerwear ecommerce store. Return only valid JSON with keys: siteTitle, metaDescription, metaKeywords. Keep siteTitle under 60 characters, metaDescription under 160 characters, metaKeywords as comma-separated phrases. Current site title: ${title}. Current description: ${description}. Current keywords: ${keywords}.`;
+
+  try {
+    const raw = await callOpenAI([
+      { role: 'system', content: 'You are an SEO copywriting assistant for an ecommerce storefront.' },
+      { role: 'user', content: prompt }
+    ]);
+    const data = parseAiJsonResponse(raw);
+    return {
+      ok: true,
+      siteTitle: data.siteTitle || title,
+      metaDescription: data.metaDescription || description,
+      metaKeywords: data.metaKeywords || keywords
+    };
+  } catch (error) {
+    console.error('Site SEO generation error:', error.message || error);
+    return {
+      ok: false,
+      error: error.message || 'Could not generate site SEO.'
     };
   }
 }
 
 async function generateBlogDraft(topic) {
+  const image = pickBlogImage(Math.floor(Math.random() * 4));
   const aiApiKey = process.env.OPENAI_API_KEY || process.env.GROK_API_KEY;
   if (!aiApiKey) {
-    const title = topic ? `How to style ${topic}` : 'A guide to custom coat personalization';
-    const excerpt = `Learn how to make the most of your custom coat with our expert tips on personalization and styling.`;
+    const title = topic ? `${topic} | ${brand.name}` : 'How to design your perfect custom coat';
+    const excerpt = `Expert tips from ${brand.name} on fabrics, fit, and personalization for bespoke outerwear.`;
     const content = `Create a standout look with a tailored coat customized to your tastes. ${excerpt} Build your own unique coat with premium fabrics, embroidery, and thoughtful details.
 
 A custom coat should fit your body and your style. Choose the right lining, collar, and buttons to keep your design elevated. Add monogramming or special finishes to make it personal.
@@ -175,40 +354,36 @@ Don’t forget to consider durability, comfort, and how your coat will travel fr
       title,
       excerpt,
       content,
-      tags: ['custom', 'styling', 'tailoring'],
-      author: 'AI Assistant'
+      image,
+      tags: ['custom coats', 'tailoring', 'coat and craft'],
+      author: 'Coat and Craft Team'
     };
   }
 
-  const prompt = `Write a blog post draft for a custom clothing storefront. Return only valid JSON with title, excerpt, content, tags, and author. The blog topic is: ${topic}`;
+  const prompt = `Write a blog post draft for ${brand.name}, a custom coat and bespoke outerwear ecommerce store. Return a single JSON object with keys: title, excerpt, content, tags (array of strings), and author. Write about custom coats, tailoring, fabrics, fit, styling, or care. Use 3-4 short paragraphs in content. Escape line breaks in strings as \\n (no raw newlines inside JSON). Topic: ${topic}`;
 
   try {
     const raw = await callOpenAI([
-      { role: 'system', content: 'You are a blog writing assistant for a custom clothing store.' },
+      {
+        role: 'system',
+        content: `You are a blog writer for ${brand.name}, a custom coat store. Reply with one compact JSON object only. Use \\n for paragraph breaks.`
+      },
       { role: 'user', content: prompt }
     ]);
-    const json = raw.trim().replace(/^[^\{]*/, '').replace(/[^\}]*$/, '');
-    const data = JSON.parse(json);
+    const data = parseAiJsonResponse(raw);
+    const content = String(data.content || '').replace(/\\n/g, '\n');
+    const imageUrl = String(data.image || data.imageUrl || '').trim();
     return {
-      title: data.title || `Custom Coat Ideas for ${topic}`,
-      excerpt: data.excerpt || '',
-      content: data.content || '',
+      title: data.title || `${brand.name}: ${topic}`,
+      excerpt: String(data.excerpt || '').replace(/\\n/g, '\n'),
+      content,
+      image: imageUrl || image,
       tags: Array.isArray(data.tags) ? data.tags : String(data.tags || '').split(',').map((tag) => tag.trim()).filter(Boolean),
-      author: data.author || 'AI Assistant'
+      author: data.author || 'Coat and Craft Team'
     };
   } catch (error) {
     console.error('Blog generation error:', error.message || error);
-    return {
-      title: topic ? `Custom Coat Guide: ${topic}` : 'Custom Coat Personalization Tips',
-      excerpt: 'Explore custom coat styling tips, personalization ideas, and how to set your look apart with tailored outerwear.',
-      content: `Customize your coat with premium fabrics, embroidered details, and tailored finishes. Use your product choices to create a one-of-a-kind silhouette.
-
-Think about how the coat should feel, fit, and move. A custom coat should reflect your personal style and the occasions you wear it for.
-
-Add finishing touches like special lining, monogramming, and custom buttons for a refined final result.`,
-      tags: ['custom coats', 'style', 'personalization'],
-      author: 'AI Assistant'
-    };
+    throw error;
   }
 }
 
@@ -224,7 +399,7 @@ async function ensureDefaultAdmin() {
     if (!passwordMatches) {
       admin.passwordHash = User.hashPassword(defaultPassword);
       await admin.save();
-      console.log('✅ Default admin password has been reset to "admin123"');
+      console.log(' Default admin password has been reset to "admin123"');
     }
     return;
   }
@@ -271,6 +446,25 @@ function resolveProductImage(body) {
   return manualUrl || storeUrl;
 }
 
+const BLOG_DEFAULT_IMAGES = [
+  '/assets/homebannner.webp',
+  '/assets/image2 (1).webp',
+  '/assets/image2 (2).webp',
+  '/assets/homebannner.webp'
+];
+
+function pickBlogImage(index = 0) {
+  const storeImages = getStoreImages();
+  if (storeImages.length) {
+    return storeImages[index % storeImages.length];
+  }
+  return BLOG_DEFAULT_IMAGES[index % BLOG_DEFAULT_IMAGES.length];
+}
+
+function resolveBlogImage(body) {
+  return resolveProductImage(body);
+}
+
 router.get('/signin', async (req, res) => {
   try {
     if (req.session.userId && (req.session.userRole === 'Admin' || req.session.userRole === 'Manager')) {
@@ -280,8 +474,9 @@ router.get('/signin', async (req, res) => {
     await ensureDefaultAdmin();
 
     res.render('admin/signin', {
-      title: 'Admin Sign In | ScoopCraft',
-      error: ''
+      title: 'Admin Sign In | Coat and Craft',
+      error: '',
+      minimalHeader: true
     });
   } catch (error) {
     console.error('Error loading admin sign in page:', error);
@@ -304,15 +499,17 @@ router.post('/signin', async (req, res) => {
 
     if (!validRole || !validPassword) {
       return res.status(401).render('admin/signin', {
-        title: 'Admin Sign In | ScoopCraft',
-        error: 'Invalid admin credentials.'
+        title: 'Admin Sign In | Coat and Craft',
+        error: 'Invalid admin credentials.',
+        minimalHeader: true
       });
     }
 
     if (user.status !== 'Active') {
       return res.status(403).render('admin/signin', {
-        title: 'Admin Sign In | ScoopCraft',
-        error: 'Your admin account is inactive.'
+        title: 'Admin Sign In | Coat and Craft',
+        error: 'Your admin account is inactive.',
+        minimalHeader: true
       });
     }
 
@@ -329,8 +526,9 @@ router.post('/signin', async (req, res) => {
   } catch (error) {
     console.error('Error signing in admin:', error);
     res.status(500).render('admin/signin', {
-      title: 'Admin Sign In | ScoopCraft',
-      error: 'Failed to sign in. Please try again.'
+      title: 'Admin Sign In | Coat and Craft',
+      error: 'Failed to sign in. Please try again.',
+      minimalHeader: true
     });
   }
 });
@@ -366,7 +564,8 @@ router.get('/blogs/add', async (req, res) => {
       blog: null,
       formAction: '/admin/blogs',
       submitText: 'Create Post',
-      editMode: false
+      editMode: false,
+      storeImages: getStoreImages()
     });
   } catch (error) {
     console.error('Error loading blog form:', error);
@@ -389,6 +588,7 @@ router.post('/blogs', async (req, res) => {
       slug,
       excerpt,
       content,
+      image: resolveBlogImage(req.body),
       tags: tagList,
       author: author || 'Admin',
       isPublished: isPublished === 'on',
@@ -412,7 +612,8 @@ router.post('/blogs/generate-ai', async (req, res) => {
     res.json({ success: true, blog });
   } catch (error) {
     console.error('Error generating AI blog draft:', error);
-    res.json({ success: false, error: 'Could not generate AI blog content.' });
+    const message = error.message || 'Could not generate AI blog content.';
+    res.json({ success: false, error: message });
   }
 });
 
@@ -431,7 +632,8 @@ router.get('/blogs/:id/edit', async (req, res) => {
       blog,
       formAction: `/admin/blogs/${blog._id}`,
       submitText: 'Update Post',
-      editMode: true
+      editMode: true,
+      storeImages: getStoreImages()
     });
   } catch (error) {
     console.error('Error loading blog post for edit:', error);
@@ -455,6 +657,7 @@ router.post('/blogs/:id', async (req, res) => {
         title,
         excerpt,
         content,
+        image: resolveBlogImage(req.body),
         tags: tagList,
         author: author || 'Admin',
         isPublished: isPublished === 'on',
@@ -505,10 +708,19 @@ router.post('/products/ai-seo', async (req, res) => {
   try {
     const { name, description, shortDescription } = req.body;
     const seo = await generateSeoFields(name, description, shortDescription);
-    res.json({ success: true, ...seo });
+    if (!seo.ok) {
+      return res.status(400).json({ success: false, error: seo.error || 'Missing product details.' });
+    }
+    res.json({
+      success: true,
+      seoTitle: seo.seoTitle,
+      seoDescription: seo.seoDescription,
+      seoKeywords: seo.seoKeywords,
+      warning: seo.warning || ''
+    });
   } catch (error) {
     console.error('Error generating SEO fields:', error);
-    res.json({ success: false, error: 'Could not generate SEO fields.' });
+    res.status(500).json({ success: false, error: error.message || 'Could not generate SEO fields.' });
   }
 });
 
@@ -522,7 +734,7 @@ router.get('/', async (req, res) => {
     ]);
 
     res.render('admin/dashboard', {
-      title: 'Admin Dashboard | ScoopCraft',
+      title: 'Admin Dashboard | Coat and Craft',
       totalProducts,
       totalOrders,
       totalUsers,
@@ -887,6 +1099,25 @@ router.post('/users/:id/delete', async (req, res) => {
   }
 });
 
+router.post('/seo/generate-ai', async (req, res) => {
+  try {
+    const { siteTitle, metaDescription, metaKeywords } = req.body;
+    const seo = await generateSiteSeoFields(siteTitle, metaDescription, metaKeywords);
+    if (!seo.ok) {
+      return res.status(500).json({ success: false, error: seo.error || 'Could not generate site SEO.' });
+    }
+    res.json({
+      success: true,
+      siteTitle: seo.siteTitle,
+      metaDescription: seo.metaDescription,
+      metaKeywords: seo.metaKeywords
+    });
+  } catch (error) {
+    console.error('Error generating site SEO:', error);
+    res.status(500).json({ success: false, error: error.message || 'Could not generate site SEO.' });
+  }
+});
+
 router.get('/seo', async (req, res) => {
   try {
     let settings = await SeoSetting.findOne();
@@ -896,7 +1127,8 @@ router.get('/seo', async (req, res) => {
 
     res.render('admin/seo', {
       title: 'SEO Settings | Admin',
-      settings
+      settings,
+      saved: req.query.saved === '1'
     });
   } catch (error) {
     console.error('Error loading SEO settings:', error);
@@ -925,21 +1157,17 @@ router.post('/seo', async (req, res) => {
       settings = new SeoSetting();
     }
 
-    settings.siteTitle = (siteTitle || '').trim() || 'ScoopCraft Pints';
+    settings.siteTitle = (siteTitle || '').trim() || brand.siteTitle;
     settings.titleSeparator = (titleSeparator || '').trim() || '|';
-    settings.metaDescription =
-      (metaDescription || '').trim() ||
-      'Build custom 3-flavour and 4-flavour artisan ice cream pints with one-time or subscription delivery.';
-    settings.metaKeywords =
-      (metaKeywords || '').trim() ||
-      'custom ice cream pints, flavour builder, artisan dessert, pint subscription';
+    settings.metaDescription = (metaDescription || '').trim() || brand.metaDescription;
+    settings.metaKeywords = (metaKeywords || '').trim() || brand.metaKeywords;
     settings.canonicalBaseUrl = (canonicalBaseUrl || '').trim();
     settings.robots = (robots || '').trim() || 'index, follow';
-    settings.ogImage = (ogImage || '').trim() || '/assets/blackseamer-honey-pint.jpg';
+    settings.ogImage = (ogImage || '').trim() || brand.defaultOgImage;
     settings.twitterCard = (twitterCard || '').trim() || 'summary_large_image';
 
     await settings.save();
-    res.redirect('/admin/seo');
+    res.redirect('/admin/seo?saved=1');
   } catch (error) {
     console.error('Error saving SEO settings:', error);
     res.status(500).render('admin/error', {

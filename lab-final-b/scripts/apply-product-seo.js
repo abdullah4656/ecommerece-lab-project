@@ -1,111 +1,63 @@
+require('dotenv').config();
 const mongoose = require('mongoose');
 const Product = require('../models/Product');
+const brand = require('../config/brand');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/customized-coats';
+const MONGODB_URI =
+  process.env.MONGODB_URI ||
+  process.env.DATABASE_URL ||
+  process.env.MONGO_URL ||
+  'mongodb://localhost:27017/customized-coats';
 
-function toSlug(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
+function clip(text, max) {
+  const value = String(text || '').trim();
+  return value.length <= max ? value : `${value.slice(0, max - 3).trim()}...`;
 }
 
-function clip(value, maxLength) {
-  const text = String(value || '').trim();
-  if (text.length <= maxLength) {
-    return text;
-  }
-  return `${text.slice(0, maxLength - 1).trim()}…`;
-}
-
-function buildSeoForProduct(product) {
-  const name = String(product.name || 'Custom Pint').trim();
-  const shortDescription = String(product.shortDescription || '').trim();
+function buildSeo(product) {
+  const name = String(product.name || 'Custom Coat').trim();
   const description = String(product.description || '').trim();
-  const category = String(product.category || 'ice cream').trim();
-  const rarity = String(product.rarity || 'signature').trim();
-  const flavourNames = (product.flavourOptions || [])
-    .map((item) => String(item.name || '').trim())
-    .filter(Boolean)
-    .slice(0, 4);
+  const shortDescription = String(product.shortDescription || '').trim();
+  const category = String(product.category || 'custom coats').trim();
 
-  const seoTitle = clip(`${name} | Custom Ice Cream Pint | ScoopCraft`, 60);
-  const summaryBase = shortDescription || description || 'Premium handcrafted custom ice cream pint.';
+  const seoTitle = clip(`${name} | ${brand.name}`, 60);
+  const summaryBase = shortDescription || description || 'Premium bespoke coat tailored to your measurements.';
   const seoDescription = clip(
-    `${name} by ScoopCraft. ${summaryBase} Order one-time or subscribe for weekly delivery.`,
+    `${name} by ${brand.name}. ${summaryBase}`,
     160
   );
-
-  const keywords = [
-    name,
-    category,
-    rarity,
-    ...flavourNames,
-    'custom ice cream pint',
-    'artisan dessert delivery',
-    'scoopcraft pints'
-  ];
-
-  const seoKeywords = keywords
-    .map((item) => item.toLowerCase())
+  const seoKeywords = [
+    name.toLowerCase(),
+    category.toLowerCase(),
+    'custom coat',
+    'tailored outerwear',
+    brand.name.toLowerCase()
+  ]
     .filter(Boolean)
-    .filter((item, index, arr) => arr.indexOf(item) === index)
     .join(', ');
 
-  const slug = toSlug(name) || String(product._id);
-  const canonicalUrl = `/products/${product._id}?slug=${slug}`;
-
-  return {
-    seoTitle,
-    seoDescription,
-    seoKeywords,
-    metaRobots: 'index, follow',
-    canonicalUrl
-  };
+  return { seoTitle, seoDescription, seoKeywords };
 }
 
-async function run() {
-  try {
-    await mongoose.connect(MONGODB_URI);
-    console.log(`Connected to ${MONGODB_URI}`);
+async function main() {
+  await mongoose.connect(MONGODB_URI);
+  const products = await Product.find();
+  let updated = 0;
 
-    const products = await Product.find({}).lean();
-    if (!products.length) {
-      console.log('No products found to update.');
-      await mongoose.connection.close();
-      process.exit(0);
-    }
-
-    let updated = 0;
-
-    for (const product of products) {
-      const seo = buildSeoForProduct(product);
-      await Product.updateOne(
-        { _id: product._id },
-        {
-          $set: {
-            seoTitle: seo.seoTitle,
-            seoDescription: seo.seoDescription,
-            seoKeywords: seo.seoKeywords,
-            metaRobots: seo.metaRobots,
-            canonicalUrl: seo.canonicalUrl
-          }
-        }
-      );
-      updated += 1;
-    }
-
-    console.log(`Products processed: ${products.length}`);
-    console.log(`Products updated with SEO: ${updated}`);
-
-    await mongoose.connection.close();
-    process.exit(0);
-  } catch (error) {
-    console.error('Failed to apply SEO to products:', error.message);
-    process.exit(1);
+  for (const product of products) {
+    const seo = buildSeo(product);
+    product.seoTitle = seo.seoTitle;
+    product.seoDescription = seo.seoDescription;
+    product.seoKeywords = seo.seoKeywords;
+    await product.save();
+    updated++;
   }
+
+  console.log(`Updated SEO for ${updated} product(s).`);
+  await mongoose.disconnect();
 }
 
-run();
+main().catch((err) => {
+  console.error('SEO update failed:', err);
+  process.exit(1);
+});

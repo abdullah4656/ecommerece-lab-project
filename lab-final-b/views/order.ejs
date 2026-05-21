@@ -3,20 +3,21 @@
 <section class="builder-hero">
   <div class="container">
     <h1>Choose Your Order Plan</h1>
-    <p>Final step: pick one-time delivery or start a recurring subscription.</p>
+    <p>Final step: pick one-time delivery or a recurring plan for your custom coat.</p>
   </div>
 </section>
 
 <section class="builder-section">
   <div class="container order-layout">
     <article class="builder-card order-summary">
-      <h2>Your Pint</h2>
-      <p><strong>Type:</strong> <%= tier %>-Flavour <%= tier === 4 ? 'Deluxe' : 'Classic' %></p>
-      <div class="flavour-chip-wrap">
-        <% selectedFlavours.forEach(flavour => { %>
-          <span class="flavour-chip"><%= flavour %></span>
-        <% }) %>
-      </div>
+      <h2>Your Coat Order</h2>
+      <% if (selectedFlavours && selectedFlavours.length) { %>
+        <div class="flavour-chip-wrap">
+          <% selectedFlavours.forEach(flavour => { %>
+            <span class="flavour-chip"><%= flavour %></span>
+          <% }) %>
+        </div>
+      <% } %>
     </article>
 
     <article class="builder-card">
@@ -37,14 +38,14 @@
           <input type="radio" name="plan" value="one-time" checked />
           <span>
             <strong>One-Time Order</strong>
-            <small>Perfect for trying a new combo.</small>
+            <small>Single delivery for this custom coat.</small>
           </span>
         </label>
         <label class="choice-row">
           <input type="radio" name="plan" value="subscription" />
           <span>
-            <strong>Weekly Subscription</strong>
-            <small>Fresh custom pint delivered every week.</small>
+            <strong>Recurring Plan</strong>
+            <small>Scheduled deliveries for repeat orders.</small>
           </span>
         </label>
 

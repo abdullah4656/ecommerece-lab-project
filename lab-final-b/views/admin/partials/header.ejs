@@ -4,13 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title><%= title %></title>
+  <link rel="icon" type="image/png" href="/assets/favicon.png" />
+  <link rel="shortcut icon" href="/assets/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/css/admin.css" />
 </head>
-<body>
+<body class="admin-body">
+  <% const isMinimalHeader = typeof minimalHeader !== 'undefined' && minimalHeader; %>
+  <% if (!isMinimalHeader) { %>
+  <div class="admin-announcement">Coat and Craft — Admin Dashboard</div>
   <header class="admin-header">
-    <div class="admin-container">
-      <a href="/admin" class="admin-brand">Coat and Craft Admin</a>
-      <nav class="admin-nav">
+    <div class="admin-container admin-header-inner">
+      <a href="/admin" class="admin-brand">
+        <img src="/assets/logo.png" alt="Coat and Craft" class="admin-logo" />
+        <span>Admin</span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin navigation">
         <a href="/admin">Dashboard</a>
         <a href="/admin/products">Products</a>
         <a href="/admin/orders">Orders</a>
@@ -18,10 +29,15 @@
         <a href="/admin/blogs">Blogs</a>
         <a href="/admin/seo">SEO</a>
       </nav>
-      <form action="/admin/signout" method="POST">
-        <button type="submit" class="admin-btn">Sign Out</button>
-      </form>
+      <div class="admin-header-actions">
+        <a href="/" class="admin-btn admin-btn-outline admin-btn-sm" target="_blank" rel="noopener noreferrer">View Site</a>
+        <form action="/admin/signout" method="POST">
+          <button type="submit" class="admin-btn admin-btn-outline admin-btn-sm">Sign Out</button>
+        </form>
+      </div>
     </div>
   </header>
-  <main class="admin-container admin-page">
-
+  <% } else { %>
+  <div class="admin-announcement">Coat and Craft — Admin Sign In</div>
+  <% } %>
+  <main class="admin-container admin-page<%= isMinimalHeader ? ' admin-page--signin' : '' %>">

@@ -1,68 +1,247 @@
 <%- include('partials/header') %>
 
+
+
 <section>
+
   <h1><%= editMode ? 'Edit Blog Post' : 'Create Blog Post' %></h1>
 
+
+
   <form id="blogForm" method="POST" action="<%= formAction %>" class="admin-form">
+
     <label>Title <input type="text" name="title" value="<%= blog ? blog.title : '' %>" required /></label>
+
     <label>Excerpt <textarea name="excerpt" rows="3"><%= blog ? (blog.excerpt || '') : '' %></textarea></label>
-    <label>Content <textarea name="content" rows="10" required><%= blog ? blog.content : '' %></textarea></label>
-    <label>Tags (comma separated) <input type="text" name="tags" value="<%= blog ? (blog.tags || []).join(', ') : '' %>" /></label>
-    <label>Author <input type="text" name="author" value="<%= blog ? (blog.author || 'Admin') : 'Admin' %>" /></label>
-    <label>
-      <input type="checkbox" name="isPublished" <%= blog && blog.isPublished ? 'checked' : (!blog ? 'checked' : '') %> /> Publish now
+
+    <label>Featured image URL <input type="url" name="image" id="blogImageUrl" value="<%= blog ? (blog.image || '') : '' %>" placeholder="/assets/homebannner.webp" /></label>
+
+    <label>Or choose image from store assets
+
+      <select name="imageFromStore" id="blogImageFromStore">
+
+        <option value="">Select image from assets</option>
+
+        <% (storeImages || []).forEach(img => { %>
+
+          <option value="<%= img %>" <%= blog && blog.image === img ? 'selected' : '' %>><%= img %></option>
+
+        <% }) %>
+
+        <% if (!storeImages || !storeImages.length) { %>
+
+          <option value="/assets/homebannner.webp" <%= blog && blog.image === '/assets/homebannner.webp' ? 'selected' : '' %>>/assets/homebannner.webp</option>
+
+          <option value="/assets/image2 (1).webp" <%= blog && blog.image === '/assets/image2 (1).webp' ? 'selected' : '' %>>/assets/image2 (1).webp</option>
+
+          <option value="/assets/image2 (2).webp" <%= blog && blog.image === '/assets/image2 (2).webp' ? 'selected' : '' %>>/assets/image2 (2).webp</option>
+
+        <% } %>
+
+      </select>
+
     </label>
+
+    <% if (blog && blog.image) { %>
+
+      <p class="admin-hint"><img src="<%= blog.image %>" alt="Blog preview" class="blog-image-preview" /></p>
+
+    <% } else { %>
+
+      <p class="admin-hint"><img src="" alt="Blog preview" class="blog-image-preview" id="blogImagePreview" hidden /></p>
+
+    <% } %>
+
+    <label>Content <textarea name="content" rows="10" required><%= blog ? blog.content : '' %></textarea></label>
+
+    <label>Tags (comma separated) <input type="text" name="tags" value="<%= blog ? (blog.tags || []).join(', ') : '' %>" /></label>
+
+    <label>Author <input type="text" name="author" value="<%= blog ? (blog.author || 'Coat and Craft Team') : 'Coat and Craft Team' %>" /></label>
+
+    <label>
+
+      <input type="checkbox" name="isPublished" <%= blog && blog.isPublished ? 'checked' : (!blog ? 'checked' : '') %> /> Publish now
+
+    </label>
+
     <input type="hidden" name="generatedByAI" value="<%= blog ? blog.generatedByAI : false %>" />
 
+
+
     <div class="admin-actions">
-      <button type="button" id="generateBlogAI" class="btn-secondary">Generate Draft with AI</button>
-      <button type="submit" class="btn-primary"><%= submitText %></button>
+
+      <button type="button" id="generateBlogAI" class="admin-btn admin-btn-muted">Generate Draft with AI</button>
+
+      <button type="submit" class="admin-btn"><%= submitText %></button>
+
     </div>
+
   </form>
+
 </section>
 
+
+
 <script>
+
 (function () {
+
   const generateBtn = document.getElementById('generateBlogAI');
+
   const form = document.getElementById('blogForm');
-  if (!generateBtn || !form) return;
+
+  if (!form) return;
+
+
+
+  const imageUrlInput = document.getElementById('blogImageUrl');
+
+  const imageFromStore = document.getElementById('blogImageFromStore');
+
+  const imagePreview = document.getElementById('blogImagePreview') || document.querySelector('.blog-image-preview');
+
+
+
+  function updatePreview(url) {
+
+    if (!imagePreview) return;
+
+    if (url) {
+
+      imagePreview.src = url;
+
+      imagePreview.hidden = false;
+
+    } else {
+
+      imagePreview.hidden = true;
+
+      imagePreview.removeAttribute('src');
+
+    }
+
+  }
+
+
+
+  if (imageUrlInput) {
+
+    imageUrlInput.addEventListener('input', function () {
+
+      updatePreview(imageUrlInput.value.trim());
+
+    });
+
+  }
+
+
+
+  if (imageFromStore) {
+
+    imageFromStore.addEventListener('change', function () {
+
+      if (imageFromStore.value && imageUrlInput) {
+
+        imageUrlInput.value = imageFromStore.value;
+
+        updatePreview(imageFromStore.value);
+
+      }
+
+    });
+
+  }
+
+
+
+  if (!generateBtn) return;
+
+
 
   generateBtn.addEventListener('click', async function () {
+
     const titleInput = form.querySelector('input[name="title"]');
+
     const excerptInput = form.querySelector('textarea[name="excerpt"]');
+
     const contentInput = form.querySelector('textarea[name="content"]');
+
     const tagsInput = form.querySelector('input[name="tags"]');
+
     const authorInput = form.querySelector('input[name="author"]');
 
-    const topic = titleInput.value.trim() || 'Custom coats and personalization tips';
+
+
+    const topic = titleInput.value.trim() || 'Custom coat fabrics and personalization tips';
+
     generateBtn.disabled = true;
+
     generateBtn.textContent = 'Generating...';
 
+
+
     try {
+
       const response = await fetch('/admin/blogs/generate-ai', {
+
         method: 'POST',
+
         headers: { 'Content-Type': 'application/json' },
+
         body: JSON.stringify({ topic })
+
       });
+
       const result = await response.json();
+
       if (result.success) {
+
         titleInput.value = result.blog.title || titleInput.value;
+
         excerptInput.value = result.blog.excerpt || excerptInput.value;
+
         contentInput.value = result.blog.content || contentInput.value;
+
         tagsInput.value = result.blog.tags ? result.blog.tags.join(', ') : tagsInput.value;
+
         authorInput.value = result.blog.author || authorInput.value;
+
+        if (result.blog.image && imageUrlInput) {
+
+          imageUrlInput.value = result.blog.image;
+
+          updatePreview(result.blog.image);
+
+        }
+
         form.querySelector('input[name="generatedByAI"]').value = 'true';
+
       } else {
-        alert(result.error || 'Unable to generate blog content.');
+
+        alert(result.error || 'Unable to generate blog content. Check your API key and model settings in .env.');
+
       }
+
     } catch (error) {
+
       alert('AI blog generation service is unavailable.');
+
     } finally {
+
       generateBtn.disabled = false;
+
       generateBtn.textContent = 'Generate Draft with AI';
+
     }
+
   });
+
 })();
+
 </script>
 
+
+
 <%- include('partials/footer') %>
+
+

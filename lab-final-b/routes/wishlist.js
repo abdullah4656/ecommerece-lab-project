@@ -26,13 +26,13 @@ router.get('/', async (req, res) => {
     const wishlistItems = (user?.wishlist || []).filter(item => item.product);
 
     res.render('wishlist', {
-      title: 'My Wishlist | ScoopCraft',
+      title: 'My Wishlist | Coat and Craft',
       wishlistItems
     });
   } catch (error) {
     console.error('Error loading wishlist:', error);
     res.status(500).render('404', {
-      title: 'Error | ScoopCraft'
+      title: 'Error | Coat and Craft'
     });
   }
 });

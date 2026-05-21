@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
     }
 
     res.render('cart', {
-      title: 'Your Cart | ScoopCraft',
+      title: 'Your Cart | Coat and Craft',
       cartItems,
       subtotal: total,
       tax: total * 0.08,
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error loading cart:', error);
     res.status(500).render('404', {
-      title: 'Error | ScoopCraft'
+      title: 'Error | Coat and Craft'
     });
   }
 });

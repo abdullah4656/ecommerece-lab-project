@@ -3,6 +3,9 @@
 <section class="page-section">
   <div class="container">
     <article class="blog-detail">
+      <% if (blog.image) { %>
+        <img src="<%= blog.image %>" alt="<%= blog.title %>" class="blog-detail-image" />
+      <% } %>
       <h1><%= blog.title %></h1>
       <p class="meta"><%= new Date(blog.createdAt).toLocaleDateString() %> &bull; <%= blog.author %><% if (blog.generatedByAI) { %> &bull; AI assisted<% } %></p>
       <p class="excerpt"><%= blog.excerpt %></p>

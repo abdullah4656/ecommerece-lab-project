@@ -21,7 +21,7 @@
             <% order.items.forEach(item => { %>
               <li><%= item.name %> x <%= item.quantity %> - $<%= item.lineTotal.toFixed(2) %></li>
               <% if (item.selectedFlavours && item.selectedFlavours.length) { %>
-                <li class="muted">Custom: <%= item.scoopCount %>-flavour mix - <%= item.selectedFlavours.join(', ') %></li>
+                <li class="muted">Customizations: <%= item.selectedFlavours.join(', ') %></li>
               <% } %>
             <% }) %>
           </ul>

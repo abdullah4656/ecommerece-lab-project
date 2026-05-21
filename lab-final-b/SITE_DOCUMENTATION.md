@@ -1,11 +1,11 @@
-# ScoopCraft Pints - Site Documentation
+# Coat and Craft - Site Documentation
 
 ## 1. Project Overview
-ScoopCraft Pints is a full-stack food e-commerce website for custom ice cream pint ordering.
+Coat and Craft is a full-stack e-commerce website for custom coat ordering and bespoke outerwear.
 It supports customer shopping journeys, admin operations, SEO management, and secure session-based access.
 
 ## 2. Objectives
-- Deliver a professional storefront for food products.
+- Deliver a professional storefront for custom coats and tailored outerwear.
 - Provide a complete user journey: browse -> customize -> cart -> checkout -> order tracking.
 - Integrate Admin Dashboard with live storefront data.
 - Support on-page SEO through database-driven metadata and Helmet.
@@ -31,9 +31,9 @@ It supports customer shopping journeys, admin operations, SEO management, and se
 ## 5. Core Features
 
 ### 5.1 Storefront
-- Homepage with extended food-brand sections, trust badges, social proof, FAQ, and conversion blocks.
+- Homepage with brand sections, trust badges, social proof, FAQ, and conversion blocks.
 - Product listing with search and rich cards.
-- Product detail page with customizable scoop selection.
+- Product detail page with customizable coat selection.
 - Wishlist support for signed-in users.
 - Cart and checkout pages with full pricing summary.
 - Order preview/success and my-orders tracking pages.
@@ -125,7 +125,7 @@ This improves baseline security and supports safer on-page SEO deployment.
 
 ### Customer Flow
 1. Browse products and search.
-2. Customize pint or use Build Your Box.
+2. Customize fabric options or use the coat configuration flow.
 3. Add to cart and adjust quantities.
 4. Checkout with shipping details, plan, and coupon.
 5. Place order and track in My Orders.
@@ -142,7 +142,7 @@ This improves baseline security and supports safer on-page SEO deployment.
 ```bash
 npm install
 ```
-2. Ensure MongoDB is running (`scoopcraft-store`).
+2. Ensure MongoDB is running (`coatandcraft-store`).
 3. Seed products (optional):
 ```bash
 npm run seed

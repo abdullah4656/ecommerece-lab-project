@@ -3,8 +3,8 @@
 ## Current Configuration
 
 Your application is already configured to connect to MongoDB at:
-- **Connection String**: `mongodb://mongodb+srv://abdullahyasin5580:<db_password>@cluster0.lluvhol.mongodb.net/?appName=Cluster0/scoopcraft-store`
-- **Database Name**: `scoopcraft-store`
+- **Connection String**: `mongodb://mongodb+srv://abdullahyasin5580:<db_password>@cluster0.lluvhol.mongodb.net/?appName=Cluster0/customized-coats`
+- **Database Name**: `customized-coats`
 - **Default Port**: `27017`
 
 ## Step 1: Start MongoDB Service
@@ -76,7 +76,7 @@ npm run dev
 You should see in the console:
 ```
 Connected to MongoDB
-ScoopCraft Pints running at http://localhost:3004
+Coat and Craft running at http://localhost:10000
 ```
 
 ## Troubleshooting
@@ -129,16 +129,16 @@ If you prefer using MongoDB Atlas (cloud database):
 
 ## Connection String Format
 
-- **Local MongoDB**: `mongodb://localhost:27017/scoopcraft-store`
-- **With Authentication**: `mongodb://username:password@localhost:27017/scoopcraft-store`
-- **MongoDB Atlas**: `mongodb+srv://username:password@cluster.mongodb.net/scoopcraft-store`
+- **Local MongoDB**: `mongodb://localhost:27017/customized-coats`
+- **With Authentication**: `mongodb://username:password@localhost:27017/customized-coats`
+- **MongoDB Atlas**: `mongodb+srv://username:password@cluster.mongodb.net/customized-coats`
 
 ## Environment Variable (Optional)
 
 You can also set the MongoDB URI as an environment variable instead of hardcoding:
 
 ```powershell
-$env:MONGODB_URI="mongodb://localhost:27017/scoopcraft-store"
+$env:MONGODB_URI="mongodb://localhost:27017/customized-coats"
 npm start
 ```
 

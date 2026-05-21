@@ -52,7 +52,7 @@
       }
 
       if (help) {
-        help.textContent = `Pick exactly ${tier} flavours.`;
+        help.textContent = `Pick exactly ${tier} customization options.`;
       }
 
       if (submitButton) {
@@ -372,8 +372,8 @@
       const ready = baseChecked && flavourCount > 0;
       modalConfirmBtn.disabled = !ready;
       modalStatusEl.textContent = ready
-        ? `Ready: 1 base + ${flavourCount} flavour${flavourCount > 1 ? 's' : ''}.`
-        : `Select 1 base and up to ${maxFlavours} flavours.`;
+        ? `Ready: 1 base fabric + ${flavourCount} option${flavourCount > 1 ? 's' : ''}.`
+        : `Select 1 base fabric and up to ${maxFlavours} options.`;
     }
 
     function openModalForCard(card) {
@@ -388,8 +388,8 @@
       const maxFlavours = getMaxFlavourByCase();
       const productName = String(card.querySelector('h4') ? card.querySelector('h4').textContent : 'this product');
 
-      modalProductName.textContent = `Configure ${productName}: choose 1 base and up to ${maxFlavours} flavour${maxFlavours > 1 ? 's' : ''}.`;
-      flavourLimitLabel.textContent = `Choose Flavours (up to ${maxFlavours})`;
+      modalProductName.textContent = `Configure ${productName}: choose 1 base fabric and up to ${maxFlavours} option${maxFlavours > 1 ? 's' : ''}.`;
+      flavourLimitLabel.textContent = `Choose Options (up to ${maxFlavours})`;
 
       baseOptionsEl.innerHTML = baseOptions
         .map((base, idx) => `<label class="box-option-pill"><input type="radio" name="boxBasePick" value="${escapeHtml(base)}" ${idx === 0 ? 'checked' : ''} /><span>${escapeHtml(base)}</span></label>`)
@@ -397,7 +397,7 @@
 
       activeSelection.base = baseOptions.length ? baseOptions[0] : '';
 
-      const fallbackFlavours = flavourOptions.length ? flavourOptions : ['Caramel Crunch', 'Berry Swirl', 'Cookie Crumble', 'Pistachio Cream'];
+      const fallbackFlavours = flavourOptions.length ? flavourOptions : ['Charcoal Wool', 'Navy Herringbone', 'Camel Melton', 'Black Cashmere Blend'];
       flavourOptionsEl.innerHTML = fallbackFlavours
         .map((flavour) => `<label class="box-option-pill"><input type="checkbox" value="${escapeHtml(flavour)}" /><span>${escapeHtml(flavour)}</span></label>`)
         .join('');
@@ -446,7 +446,7 @@
         if (selected === 0) {
           feedbackEl.textContent = 'Select products to start building your bundle.';
         } else if (remaining > 0) {
-          feedbackEl.textContent = `Add ${remaining} more pint${remaining > 1 ? 's' : ''} to complete your ${required}-pack.`;
+          feedbackEl.textContent = `Add ${remaining} more coat${remaining > 1 ? 's' : ''} to complete your ${required}-item set.`;
         } else {
           feedbackEl.textContent = 'Bundle ready. Add to cart now.';
         }
@@ -503,7 +503,7 @@
           selectedItems.push({
             productId,
             quantity: 1,
-            selectedFlavours: [`Base: ${entry.base}`].concat(entry.flavours.map((value) => `Flavor: ${value}`)),
+            selectedFlavours: [`Base: ${entry.base}`].concat(entry.flavours.map((value) => `Option: ${value}`)),
             scoopCount: entry.flavours.length
           });
         });
@@ -682,44 +682,59 @@ function setupChatbotWidget() {
 
   const intents = [
     {
+      key: 'products',
+      keywords: ['recommend', 'suggest', 'which coat', 'best coat', 'product', 'collection', 'shop', 'browse'],
+      reply: 'Tell me your occasion (winter, formal, daily wear) and I will suggest coats from our live catalog with prices and links.'
+    },
+    {
       key: 'sizes',
-      keywords: ['size', 'fit', 'measurement', 'length', 'width'],
-      reply: 'We offer standard and custom sizes for all coats. You can check sizing charts on each product page or request a personalized measurement.'
+      keywords: ['size', 'fit', 'measurement', 'length', 'width', 'tailor'],
+      reply: 'We offer standard and custom sizes. Check each product page or book a fitting via /contact — bespoke coats typically take 5–6 weeks.'
     },
     {
       key: 'personalization',
-      keywords: ['custom', 'personalize', 'monogram', 'embroidery', 'design'],
-      reply: 'You can personalize coats with initials, embroidery, or special fabric choices. Select "Customize" on the product page to start.'
+      keywords: ['custom', 'personalize', 'monogram', 'embroidery', 'design', 'fabric', 'lining'],
+      reply: 'Choose fabrics, lining, and finishes on /products (Customize & Add) or submit a full bespoke request at /custom-coat.'
     },
     {
       key: 'shipping',
-      keywords: ['shipping', 'delivery', 'arrive', 'dispatch', 'time'],
-      reply: 'We dispatch orders within 2-4 business days. Shipping options and estimated delivery times are shown at checkout.'
+      keywords: ['shipping', 'delivery', 'arrive', 'dispatch', 'time', 'ship'],
+      reply: 'Shipping cost and timing are shown at checkout. Processing times depend on ready-to-wear vs bespoke pieces.'
     },
     {
       key: 'returns',
       keywords: ['return', 'exchange', 'refund', 'policy', 'wrong size'],
-      reply: 'Our return and exchange policy allows returns within 14 days of delivery. Personalized items may have specific restrictions.'
+      reply: 'Ready-to-wear items may be returned within 30 days if unused. Heavily customized coats may be final sale — see /contact for your order.'
     },
     {
       key: 'pricing',
-      keywords: ['price', 'cost', 'expensive', 'cheap', 'how much'],
-      reply: 'Prices vary based on coat style, fabric, and personalization. Each product page shows the exact price before adding to cart.'
+      keywords: ['price', 'cost', 'expensive', 'cheap', 'how much', 'budget'],
+      reply: 'Each coat shows its price on /products — typically from about $249 upward depending on style and fabric.'
     },
     {
       key: 'cart_checkout',
-      keywords: ['cart', 'checkout', 'payment', 'coupon', 'discount'],
-      reply: 'Review your selected items in the cart. Proceed to checkout to confirm shipping, personalization, and optional discounts.'
+      keywords: ['cart', 'checkout', 'payment', 'coupon', 'discount', 'buy'],
+      reply: 'Use /cart to review items, then /checkout after signing in. Apply coupons on the checkout page.'
     },
     {
       key: 'order_tracking',
       keywords: ['order', 'track', 'status', 'history', 'my orders'],
-      reply: 'After signing in, open My Orders to see order history and track current orders.'
+      reply: 'Sign in and open /my-orders for order history and status updates.'
+    },
+    {
+      key: 'wishlist',
+      keywords: ['wishlist', 'save', 'saved', 'favourite', 'favorite'],
+      reply: 'Sign in and tap Add to Wishlist on any product. View saved coats at /wishlist.'
+    },
+    {
+      key: 'blog',
+      keywords: ['blog', 'article', 'guide', 'tips'],
+      reply: 'Read coat care and style guides on /blogs.'
     },
     {
       key: 'support',
-      keywords: ['support', 'contact', 'help', 'issue', 'problem', 'query'],
-      reply: 'Use the Contact page or email us for support. Include your order details for faster assistance.'
+      keywords: ['support', 'contact', 'help', 'issue', 'problem', 'appointment'],
+      reply: 'Visit /contact for appointments, sizing help, or order questions.'
     }
   ];
 
@@ -760,7 +775,9 @@ function setupChatbotWidget() {
   function appendMessage(role, text) {
     const row = document.createElement('div');
     row.className = `chatbot-msg ${role}`;
-    row.innerHTML = `<p>${text}</p>`;
+    const p = document.createElement('p');
+    p.textContent = String(text || '');
+    row.appendChild(p);
     body.appendChild(row);
     body.scrollTop = body.scrollHeight;
     return row;
@@ -778,8 +795,8 @@ function setupChatbotWidget() {
 
     if (isGreeting(safeText)) {
       return state.customerName
-        ? `Hi ${state.customerName}! How can I help you today — sizes, personalization, cart, or order tracking?`
-        : 'Hi! I can help you with coat sizes, customization, cart, checkout, and tracking your order.';
+        ? `Hi ${state.customerName}! I can suggest coats, explain fabrics, or help with cart and orders. What do you need?`
+        : 'Hi! I am the Coat and Craft assistant — ask for product picks, sizing, customization, cart, checkout, or orders.';
     }
 
     if (isThanks(safeText)) {
@@ -796,7 +813,7 @@ function setupChatbotWidget() {
       return 'If checkout is not moving forward, first confirm cart has items, then ensure all required fields are filled before previewing your order.';
     }
 
-    return 'I did not fully catch that. Ask me about coat sizes, personalization, pricing, cart, checkout, orders, or support.';
+    return 'Try asking for a coat recommendation, fabric help, pricing, cart (/cart), checkout, orders, wishlist, or contact (/contact).';
   }
 
   function replyWithTyping(text) {
@@ -813,7 +830,8 @@ function setupChatbotWidget() {
         if (typingNode && typingNode.parentNode) {
           typingNode.parentNode.removeChild(typingNode);
         }
-        appendMessage('bot', data.answer || getReply(text));
+        const answer = (data && data.answer && String(data.answer).trim()) || getReply(text);
+        appendMessage('bot', answer);
       })
       .catch(() => {
         if (typingNode && typingNode.parentNode) {
@@ -831,11 +849,19 @@ function setupChatbotWidget() {
 
   function openChat() {
     panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
+    toggle.classList.add('is-open');
+    toggle.setAttribute('aria-expanded', 'true');
+    toggle.setAttribute('aria-label', 'Close chat assistant');
     input.focus();
   }
 
   function closeChat() {
     panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    toggle.classList.remove('is-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    toggle.setAttribute('aria-label', 'Open chat assistant');
   }
 
   toggle.addEventListener('click', () => {
@@ -928,6 +954,49 @@ function setupChatbotWidget() {
       });
   }
 
+  function setupScrollAnimations() {
+    const items = document.querySelectorAll('.animate-on-scroll');
+    if (!items.length) return;
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      items.forEach((el) => el.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -30px 0px' }
+    );
+
+    items.forEach((el) => observer.observe(el));
+  }
+
+  function setupCartQuantityControls() {
+    document.querySelectorAll('.cart-qty-form').forEach((form) => {
+      const input = form.querySelector('.quantity-input');
+      const minus = form.querySelector('.qty-minus');
+      const plus = form.querySelector('.qty-plus');
+      if (!input || !minus || !plus) return;
+
+      minus.addEventListener('click', () => {
+        const next = Math.max(1, Number(input.value || 1) - 1);
+        input.value = String(next);
+      });
+
+      plus.addEventListener('click', () => {
+        const next = Math.max(1, Number(input.value || 1) + 1);
+        input.value = String(next);
+      });
+    });
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     setupFlavourLimiter('customAddToCartForm', 'scoopCount', 'selectedFlavours', 'productSelectionStatus', 'productSelectionHelp', 'addToCartBtn');
     setupCustomAddToCartForm();
@@ -935,6 +1004,8 @@ function setupChatbotWidget() {
     setupWishlistToggleForm();
     setupBuildYourBox();
     setupChatbotWidget();
+    setupScrollAnimations();
+    setupCartQuantityControls();
   });
 
   window.toggleWishlist = toggleWishlist;

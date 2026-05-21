@@ -2,79 +2,90 @@
 
 <section class="cart-page">
   <div class="container">
-    <h1 class="page-title">Your Cart</h1>
-
-    
+    <header class="cart-page-header animate-fade-in">
+      <p class="cart-eyebrow">Shopping bag</p>
+      <h1 class="page-title">Your Cart</h1>
+      <p class="page-subtitle">Review your coats, fabrics, and custom details before checkout.</p>
+    </header>
 
     <% if (!cartItems || cartItems.length === 0) { %>
-      <div class="cart-empty">
+      <div class="cart-empty animate-fade-in-up">
+        <div class="cart-empty-icon" aria-hidden="true">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 6h15l-1.5 9h-12L6 6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M6 6L5 3H2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="9" cy="20" r="1" fill="currentColor"/>
+            <circle cx="18" cy="20" r="1" fill="currentColor"/>
+          </svg>
+        </div>
         <h2>Your cart is empty</h2>
-        <p>Start adding your favorite pints and custom flavour mixes.</p>
-        <a href="/products" class="btn-primary">Browse Products</a>
+        <p>Explore our collection and personalize your perfect coat.</p>
+        <a href="/products" class="btn-primary">Browse Coats</a>
       </div>
     <% } else { %>
+      <p class="cart-meta animate-fade-in"><span class="cart-count-pill"><%= cartItems.length %> item<%= cartItems.length === 1 ? '' : 's' %></span></p>
+
       <div class="cart-layout">
-        <div class="cart-items-panel">
-          <table class="data-table cart-table">
-            <thead>
-              <tr>
-                <th>Product</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Total</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% cartItems.forEach(item => { %>
-                <tr>
-                  <td>
-                    <strong><%= item.product.name %></strong>
-                    <% if (item.selectedFlavours && item.selectedFlavours.length) { %>
-                      <p class="cart-custom muted"><strong>Custom:</strong> <%= item.scoopCount %>-flavour mix - <%= item.selectedFlavours.join(', ') %></p>
-                    <% } %>
-                  </td>
-                  <td>$<%= item.product.price.toFixed(2) %></td>
-                  <td>
-                    <form action="/cart/update" method="POST" class="inline-form cart-qty-form">
-                      <input type="hidden" name="productId" value="<%= item.product._id %>" />
-                      <input type="hidden" name="itemIndex" value="<%= item.itemIndex %>" />
-                      <input type="number" name="quantity" min="1" value="<%= item.quantity %>" />
-                      <button type="submit" class="btn-outline">Update</button>
-                    </form>
-                  </td>
-                  <td>$<%= item.itemTotal.toFixed(2) %></td>
-                  <td>
-                    <form action="/cart/remove" method="POST" class="inline-form">
-                      <input type="hidden" name="productId" value="<%= item.product._id %>" />
-                      <input type="hidden" name="itemIndex" value="<%= item.itemIndex %>" />
-                      <button type="submit" class="btn-outline btn-remove">Remove</button>
-                    </form>
-                  </td>
-                </tr>
-              <% }) %>
-            </tbody>
-          </table>
+        <div class="cart-items-list">
+          <% cartItems.forEach((item, index) => { %>
+            <article class="cart-item-card animate-on-scroll" style="--stagger: <%= index %>">
+              <a href="/products/<%= item.product._id %>" class="cart-item-image">
+                <img src="<%= item.product.image %>" alt="<%= item.product.name %>" loading="lazy" />
+              </a>
+              <div class="cart-item-body">
+                <h3 class="cart-item-name">
+                  <a href="/products/<%= item.product._id %>"><%= item.product.name %></a>
+                </h3>
+                <% if (item.product.rarity) { %>
+                  <p class="cart-item-rarity"><%= item.product.rarity %></p>
+                <% } %>
+                <% if (item.selectedFlavours && item.selectedFlavours.length) { %>
+                  <p class="cart-custom"><strong>Customizations:</strong> <%= item.selectedFlavours.join(', ') %></p>
+                <% } %>
+                <p class="cart-item-unit">$<%= item.product.price.toFixed(2) %> each</p>
+              </div>
+              <div class="cart-item-side">
+                <p class="cart-item-total">$<%= item.itemTotal.toFixed(2) %></p>
+                <form action="/cart/update" method="POST" class="cart-qty-form">
+                  <input type="hidden" name="productId" value="<%= item.product._id %>" />
+                  <input type="hidden" name="itemIndex" value="<%= item.itemIndex %>" />
+                  <div class="quantity-input-group">
+                    <button type="button" class="quantity-btn qty-minus" aria-label="Decrease quantity">−</button>
+                    <input type="number" name="quantity" class="quantity-input" min="1" value="<%= item.quantity %>" aria-label="Quantity" />
+                    <button type="button" class="quantity-btn qty-plus" aria-label="Increase quantity">+</button>
+                  </div>
+                  <button type="submit" class="btn-outline btn-sm">Update</button>
+                </form>
+                <form action="/cart/remove" method="POST" class="inline-form cart-remove-form">
+                  <input type="hidden" name="productId" value="<%= item.product._id %>" />
+                  <input type="hidden" name="itemIndex" value="<%= item.itemIndex %>" />
+                  <button type="submit" class="btn-outline btn-remove btn-sm">Remove</button>
+                </form>
+              </div>
+            </article>
+          <% }) %>
         </div>
 
-        <aside class="cart-summary-card">
-          <h2>Order Total</h2>
-          <p><span>Subtotal</span> <strong>$<%= subtotal.toFixed(2) %></strong></p>
-          <p><span>Tax</span> <strong>$<%= tax.toFixed(2) %></strong></p>
-          <p><span>Shipping</span> <strong>$<%= shipping.toFixed(2) %></strong></p>
-          <hr />
-          <p class="total-row"><span>Total</span> <strong>$<%= total.toFixed(2) %></strong></p>
-          <a href="/checkout" class="btn-primary full-width">Proceed to Checkout</a>
-          <form action="/cart/clear" method="POST" class="inline-form full-width-form">
+        <aside class="cart-summary-card animate-on-scroll cart-summary-sticky">
+          <h2>Order summary</h2>
+          <div class="summary-rows">
+            <p class="summary-row"><span>Subtotal</span> <strong>$<%= subtotal.toFixed(2) %></strong></p>
+            <p class="summary-row"><span>Tax (8%)</span> <strong>$<%= tax.toFixed(2) %></strong></p>
+            <p class="summary-row"><span>Shipping</span> <strong>$<%= shipping.toFixed(2) %></strong></p>
+          </div>
+          <hr class="summary-divider" />
+          <p class="summary-row total-row"><span>Total</span> <strong>$<%= total.toFixed(2) %></strong></p>
+          <a href="/checkout" class="btn-primary full-width cart-checkout-btn">Proceed to Checkout</a>
+          <form action="/cart/clear" method="POST" class="full-width-form">
             <button type="submit" class="btn-outline full-width">Clear Cart</button>
           </form>
-          <p class="muted top-gap">Tip: Signed-in users can track all placed orders from My Orders.</p>
+          <p class="muted cart-summary-note">Signed-in customers can track orders from My Orders.</p>
         </aside>
       </div>
 
-      <div class="builder-grid top-gap">
-        <article class="builder-card">
-          <h2>Checkout Readiness Checklist</h2>
+      <div class="builder-grid top-gap cart-extras">
+        <article class="builder-card animate-on-scroll">
+          <h2>Checkout checklist</h2>
           <ul class="tick-list">
             <li>Verify quantity and customization choices</li>
             <li>Confirm shipping information in checkout</li>
@@ -82,22 +93,10 @@
             <li>Apply coupon code during checkout if available</li>
           </ul>
         </article>
-        <article class="builder-card">
-          <h2>Need More Choices?</h2>
-          <p>Continue shopping to add more flavor combinations before finalizing your order.</p>
+        <article class="builder-card animate-on-scroll">
+          <h2>Need more options?</h2>
+          <p>Compare more coats and fabric finishes before you check out.</p>
           <a href="/products" class="btn-outline">Continue Shopping</a>
-        </article>
-      </div>
-
-      <div class="builder-grid top-gap">
-        <article class="builder-card">
-          <h2>Cart FAQ</h2>
-          <p><strong>Can I update quantity?</strong><br />Yes, change quantity and click update directly in the cart table.</p>
-          <p><strong>Can I remove a custom item?</strong><br />Yes, remove uses product plus item index to remove exact customization.</p>
-        </article>
-        <article class="builder-card">
-          <h2>Professional Order Flow</h2>
-          <p>Cart -> Checkout -> Preview -> Place Order -> Track status in your signed-in account.</p>
         </article>
       </div>
     <% } %>

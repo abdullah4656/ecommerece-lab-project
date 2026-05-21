@@ -52,10 +52,10 @@
           </td>
           <td>
               <input type="password" name="password" placeholder="New password (optional)" />
-              <button type="submit">Update</button>
+              <button type="submit" class="admin-btn admin-btn-sm">Update</button>
             </form>
             <form method="POST" action="/admin/users/<%= user._id %>/delete" class="inline-form">
-              <button type="submit">Delete</button>
+              <button type="submit" class="admin-btn admin-btn-danger admin-btn-sm">Delete</button>
             </form>
           </td>
         </tr>

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const brand = require('../config/brand');
 
 const seoSettingSchema = new mongoose.Schema(
   {
@@ -6,7 +7,7 @@ const seoSettingSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      default: 'ScoopCraft Pints'
+      default: brand.siteTitle
     },
     titleSeparator: {
       type: String,
@@ -17,12 +18,12 @@ const seoSettingSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      default: 'Build custom 3-flavour and 4-flavour artisan ice cream pints with one-time or subscription delivery.'
+      default: brand.metaDescription
     },
     metaKeywords: {
       type: String,
       trim: true,
-      default: 'custom ice cream pints, flavour builder, artisan dessert, pint subscription'
+      default: brand.metaKeywords
     },
     canonicalBaseUrl: {
       type: String,
@@ -37,7 +38,7 @@ const seoSettingSchema = new mongoose.Schema(
     ogImage: {
       type: String,
       trim: true,
-      default: '/assets/blackseamer-honey-pint.jpg'
+      default: brand.defaultOgImage
     },
     twitterCard: {
       type: String,

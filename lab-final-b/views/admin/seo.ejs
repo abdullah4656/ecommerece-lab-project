@@ -2,18 +2,72 @@
 
 <section>
   <h1>SEO Settings</h1>
+  <p class="dashboard-subtitle">Global meta tags used across the storefront. Product pages can override these with per-product SEO fields.</p>
 
-  <form method="POST" action="/admin/seo" class="admin-form">
+  <% if (saved) { %>
+    <p class="admin-success" role="status">SEO settings saved successfully.</p>
+  <% } %>
+
+  <form id="seoSettingsForm" method="POST" action="/admin/seo" class="admin-form">
     <label>Site Title <input type="text" name="siteTitle" value="<%= settings.siteTitle %>" /></label>
     <label>Title Separator <input type="text" name="titleSeparator" value="<%= settings.titleSeparator %>" /></label>
-    <label>Meta Description <textarea name="metaDescription"><%= settings.metaDescription %></textarea></label>
+    <label>Meta Description <textarea name="metaDescription" rows="3"><%= settings.metaDescription %></textarea></label>
     <label>Meta Keywords <input type="text" name="metaKeywords" value="<%= settings.metaKeywords %>" /></label>
-    <label>Canonical Base URL <input type="url" name="canonicalBaseUrl" value="<%= settings.canonicalBaseUrl %>" /></label>
+    <label>Canonical Base URL <input type="url" name="canonicalBaseUrl" value="<%= settings.canonicalBaseUrl %>" placeholder="https://yoursite.com" /></label>
     <label>Robots <input type="text" name="robots" value="<%= settings.robots %>" /></label>
     <label>OG Image URL <input type="text" name="ogImage" value="<%= settings.ogImage %>" /></label>
     <label>Twitter Card <input type="text" name="twitterCard" value="<%= settings.twitterCard %>" /></label>
-    <button type="submit" class="admin-btn">Save SEO Settings</button>
+
+    <div class="admin-actions">
+      <button type="button" id="generateSiteSeoAI" class="admin-btn admin-btn-muted">Generate with AI</button>
+      <button type="submit" class="admin-btn">Save SEO Settings</button>
+    </div>
   </form>
 </section>
+
+<script>
+(function () {
+  const button = document.getElementById('generateSiteSeoAI');
+  const form = document.getElementById('seoSettingsForm');
+  if (!button || !form) return;
+
+  button.addEventListener('click', async function () {
+    button.disabled = true;
+    button.textContent = 'Generating...';
+
+    const siteTitle = form.querySelector('input[name="siteTitle"]').value.trim();
+    const metaDescription = form.querySelector('textarea[name="metaDescription"]').value.trim();
+    const metaKeywords = form.querySelector('input[name="metaKeywords"]').value.trim();
+
+    try {
+      const response = await fetch('/admin/seo/generate-ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ siteTitle, metaDescription, metaKeywords })
+      });
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        throw new Error('Server returned an invalid response. Please sign in again and retry.');
+      }
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || `Request failed (${response.status})`);
+      }
+
+      form.querySelector('input[name="siteTitle"]').value = data.siteTitle || siteTitle;
+      form.querySelector('textarea[name="metaDescription"]').value = data.metaDescription || metaDescription;
+      form.querySelector('input[name="metaKeywords"]').value = data.metaKeywords || metaKeywords;
+    } catch (error) {
+      alert(error.message || 'AI SEO service is unavailable.');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Generate with AI';
+    }
+  });
+})();
+</script>
 
 <%- include('partials/footer') %>

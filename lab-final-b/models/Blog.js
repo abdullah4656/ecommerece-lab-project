@@ -19,6 +19,11 @@ const blogSchema = new mongoose.Schema(
       trim: true,
       default: ''
     },
+    image: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     content: {
       type: String,
       required: true,

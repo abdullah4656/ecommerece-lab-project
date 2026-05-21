@@ -32,37 +32,74 @@
     </div>
   </div>
 </footer>
-<button id="chatbotToggle" class="chatbot-toggle" type="button" aria-label="Open chat assistant">Chat</button>
-<section id="chatbotPanel" class="chatbot-panel" aria-label="Coat and Craft Assistant">
+<button id="chatbotToggle" class="chatbot-toggle" type="button" aria-label="Open chat assistant" aria-expanded="false">
+  <span class="chatbot-toggle-icon chatbot-toggle-icon--chat" aria-hidden="true">
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 3C7.03 3 3 6.58 3 11c0 2.02.9 3.86 2.41 5.24L4 21l5.12-1.28C9.97 19.9 10.97 20 12 20c4.97 0 9-3.58 9-8s-4.03-8-9-8z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+      <circle cx="8.5" cy="11" r="1" fill="currentColor"/>
+      <circle cx="12" cy="11" r="1" fill="currentColor"/>
+      <circle cx="15.5" cy="11" r="1" fill="currentColor"/>
+    </svg>
+  </span>
+  <span class="chatbot-toggle-icon chatbot-toggle-icon--close" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  </span>
+  <span class="chatbot-toggle-pulse" aria-hidden="true"></span>
+</button>
+<section id="chatbotPanel" class="chatbot-panel" aria-label="Coat and Craft Assistant" aria-hidden="true">
   <header class="chatbot-header">
-    <div>
-      <strong>Coat and Craft Assistant</strong>
-      <p>Ask about custom coats, sizes, personalization, orders, or shipping.</p>
+    <div class="chatbot-header-brand">
+      <span class="chatbot-avatar" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2l2.2 6.8H21l-5.5 4 2.1 6.7L12 15.4 6.4 19.5l2.1-6.7L3 8.8h6.8L12 2z" fill="currentColor"/>
+        </svg>
+      </span>
+      <div>
+        <strong>Coat & Craft Assistant</strong>
+        <p class="chatbot-status"><span class="chatbot-status-dot"></span>Online — sizing, fabrics & orders</p>
+      </div>
     </div>
-    <button id="chatbotClose" type="button" class="chatbot-close" aria-label="Close chat">×</button>
+    <button id="chatbotClose" type="button" class="chatbot-close" aria-label="Close chat">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
   </header>
   <div id="chatbotBody" class="chatbot-body">
     <div class="chatbot-msg bot">
-      <p>Hello! I am your local store assistant. Ask me about products, personalization, orders, shipping, SEO, or blog ideas.</p>
+      <p>Hello! I can help with coat recommendations, fabrics, cart, orders, and support. Pick a topic below or type your question.</p>
     </div>
   </div>
-  <div class="chatbot-prompts">
-    <button type="button" class="chatbot-prompt"
-      data-question="What sizes do you offer for overcoats?">Sizes</button>
-    <button type="button" class="chatbot-prompt"
-      data-question="How can I personalize my coat?">Personalization</button>
-    <button type="button" class="chatbot-prompt"
-      data-question="What is your return and exchange policy?">Returns & Exchanges</button>
-    <button type="button" class="chatbot-prompt"
-      data-question="How can I track my order status?">Track Orders</button>
-    <button type="button" class="chatbot-prompt"
-      data-question="What is the price range for custom coats?">Pricing</button>
-    <button type="button" class="chatbot-prompt"
-      data-question="Which coat style is best for winter or formal events?">Style Advice</button>
+  <div class="chatbot-prompts-wrap">
+    <p class="chatbot-prompts-label">Quick topics</p>
+    <div class="chatbot-prompts">
+      <button type="button" class="chatbot-prompt"
+        data-question="What sizes do you offer for overcoats?">Sizes</button>
+      <button type="button" class="chatbot-prompt"
+        data-question="How can I personalize my coat?">Personalization</button>
+      <button type="button" class="chatbot-prompt"
+        data-question="What is your return and exchange policy?">Returns</button>
+      <button type="button" class="chatbot-prompt"
+        data-question="How can I track my order status?">Track order</button>
+      <button type="button" class="chatbot-prompt"
+        data-question="What is the price range for custom coats?">Pricing</button>
+      <button type="button" class="chatbot-prompt"
+        data-question="Which coat style is best for winter or formal events?">Style advice</button>
+      <button type="button" class="chatbot-prompt"
+        data-question="Recommend a coat from your collection">Product picks</button>
+      <button type="button" class="chatbot-prompt"
+        data-question="How do I customize fabric and lining options?">Fabrics</button>
+    </div>
   </div>
   <form id="chatbotForm" class="chatbot-form">
-    <input id="chatbotInput" type="text" placeholder="Type your question..." autocomplete="off" />
-    <button type="submit">Send</button>
+    <input id="chatbotInput" type="text" placeholder="Ask about coats, sizing, orders…" autocomplete="off" />
+    <button type="submit" class="chatbot-send" aria-label="Send message">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 12h14M14 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
   </form>
 </section>
 

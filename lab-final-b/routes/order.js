@@ -57,7 +57,7 @@ async function buildOrderContext(req, res, next) {
   } catch (error) {
     console.error('Error building order context:', error);
     res.status(500).render('404', {
-      title: 'Error | ScoopCraft'
+      title: 'Error | Coat and Craft'
     });
   }
 }
@@ -81,7 +81,7 @@ router.post('/preview', requireAuth, buildOrderContext, applyDiscount, (req, res
   };
 
   res.render('order-preview', {
-    title: 'Order Preview | ScoopCraft',
+    title: 'Order Preview | Coat and Craft',
     cartItems: req.order.cartItems,
     customer: req.order.customer,
     plan: req.order.plan,
@@ -156,7 +156,7 @@ router.post('/confirm', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Error confirming order:', error);
     res.status(500).render('404', {
-      title: 'Error | ScoopCraft'
+      title: 'Error | Coat and Craft'
     });
   }
 });
@@ -166,18 +166,18 @@ router.get('/success/:id', requireAuth, async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (!order) {
       return res.status(404).render('404', {
-        title: 'Order Not Found | ScoopCraft'
+        title: 'Order Not Found | Coat and Craft'
       });
     }
 
     res.render('order-success', {
-      title: 'Order Placed | ScoopCraft',
+      title: 'Order Placed | Coat and Craft',
       order
     });
   } catch (error) {
     console.error('Error loading order success page:', error);
     res.status(500).render('404', {
-      title: 'Error | ScoopCraft'
+      title: 'Error | Coat and Craft'
     });
   }
 });

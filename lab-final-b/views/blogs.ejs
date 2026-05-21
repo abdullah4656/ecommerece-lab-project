@@ -2,15 +2,20 @@
 
 <section class="page-section">
   <div class="container">
-    <h1>Latest Articles</h1>
-    <p>Discover tips, inspiration, and stories about custom styling, personalization, and product highlights.</p>
+    <h1>Coat and Craft Journal</h1>
+    <p>Guides on fabrics, fit, personalization, and care for your custom coat.</p>
 
     <div class="blog-list">
       <% if (blogs && blogs.length) { %>
         <% blogs.forEach((blog) => { %>
           <article class="blog-card">
+            <% if (blog.image) { %>
+              <a href="/blogs/<%= blog.slug %>" class="blog-card-image-link">
+                <img src="<%= blog.image %>" alt="<%= blog.title %>" class="blog-card-image" />
+              </a>
+            <% } %>
             <h2><a href="/blogs/<%= blog.slug %>"><%= blog.title %></a></h2>
-            <p class="meta"><%= new Date(blog.createdAt).toLocaleDateString() %> &bull; <%= blog.author %><% if (blog.generatedByAI) { %> &bull; AI draft<% } %></p>
+            <p class="meta"><%= new Date(blog.createdAt).toLocaleDateString() %> &bull; <%= blog.author %><% if (blog.generatedByAI) { %> &bull; AI assisted<% } %></p>
             <p><%= blog.excerpt %></p>
             <p><a class="btn-primary" href="/blogs/<%= blog.slug %>">Read More</a></p>
           </article>

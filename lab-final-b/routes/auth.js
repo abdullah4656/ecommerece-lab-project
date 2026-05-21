@@ -9,7 +9,7 @@ router.get('/signin', (req, res) => {
   }
 
   res.render('signin', {
-    title: 'Sign In | ScoopCraft',
+    title: 'Sign In | Coat and Craft',
     error: ''
   });
 });
@@ -21,14 +21,14 @@ router.post('/signin', async (req, res) => {
 
     if (!user || !User.verifyPassword(password || '', user.passwordHash)) {
       return res.status(401).render('signin', {
-        title: 'Sign In | ScoopCraft',
+        title: 'Sign In | Coat and Craft',
         error: 'Invalid email or password.'
       });
     }
 
     if (user.status !== 'Active') {
       return res.status(403).render('signin', {
-        title: 'Sign In | ScoopCraft',
+        title: 'Sign In | Coat and Craft',
         error: 'Your account is inactive. Please contact support.'
       });
     }
@@ -46,7 +46,7 @@ router.post('/signin', async (req, res) => {
   } catch (error) {
     console.error('Error during user sign in:', error);
     res.status(500).render('signin', {
-      title: 'Sign In | ScoopCraft',
+      title: 'Sign In | Coat and Craft',
       error: 'Failed to sign in. Please try again.'
     });
   }
@@ -58,7 +58,7 @@ router.get('/signup', (req, res) => {
   }
 
   res.render('signup', {
-    title: 'Sign Up | ScoopCraft',
+    title: 'Sign Up | Coat and Craft',
     error: ''
   });
 });
@@ -69,21 +69,21 @@ router.post('/signup', async (req, res) => {
 
     if (!name || !email || !password || !confirmPassword) {
       return res.status(400).render('signup', {
-        title: 'Sign Up | ScoopCraft',
+        title: 'Sign Up | Coat and Craft',
         error: 'All fields are required.'
       });
     }
 
     if (password.length < 6) {
       return res.status(400).render('signup', {
-        title: 'Sign Up | ScoopCraft',
+        title: 'Sign Up | Coat and Craft',
         error: 'Password must be at least 6 characters long.'
       });
     }
 
     if (password !== confirmPassword) {
       return res.status(400).render('signup', {
-        title: 'Sign Up | ScoopCraft',
+        title: 'Sign Up | Coat and Craft',
         error: 'Passwords do not match.'
       });
     }
@@ -92,7 +92,7 @@ router.post('/signup', async (req, res) => {
     const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
       return res.status(409).render('signup', {
-        title: 'Sign Up | ScoopCraft',
+        title: 'Sign Up | Coat and Craft',
         error: 'Email already registered. Please sign in.'
       });
     }
@@ -120,7 +120,7 @@ router.post('/signup', async (req, res) => {
   } catch (error) {
     console.error('Error during user sign up:', error);
     res.status(500).render('signup', {
-      title: 'Sign Up | ScoopCraft',
+      title: 'Sign Up | Coat and Craft',
       error: 'Failed to create account. Please try again.'
     });
   }

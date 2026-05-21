@@ -3,7 +3,7 @@
 <section>
   <h1><%= editMode ? 'Edit Product' : 'Add Product' %></h1>
 
-  <form method="POST" action="<%= formAction %>" class="admin-form">
+  <form id="productForm" method="POST" action="<%= formAction %>" class="admin-form">
     <label>Name <input type="text" name="name" value="<%= product ? product.name : '' %>" required /></label>
     <label>Price <input type="number" name="price" step="0.01" value="<%= product ? product.price : '' %>" required /></label>
     <label>Image URL <input type="url" name="image" value="<%= product ? product.image : '' %>" /></label>
@@ -22,8 +22,8 @@
       <input type="checkbox" name="isActive" <%= product ? (product.isActive ? 'checked' : '') : 'checked' %> /> Active on storefront
     </label>
 
-    <h2>Flavour Options</h2>
-    <p>One flavour per line using format: Name|Note|#Color</p>
+    <h2>Customization Options</h2>
+    <p>One fabric or finish option per line using format: Name|Note|#Color</p>
     <textarea name="flavourOptions" rows="6"><% if (product && product.flavourOptions && product.flavourOptions.length) { %><%= product.flavourOptions.map(item => `${item.name}|${item.note || ''}|${item.color || ''}`).join('\n') %><% } %></textarea>
 
     <h2>SEO Fields</h2>
@@ -34,7 +34,7 @@
     <label>Canonical URL <input type="url" name="canonicalUrl" value="<%= product ? (product.canonicalUrl || '') : '' %>" /></label>
 
     <div class="admin-actions">
-      <button type="button" id="generateSeoAI" class="btn-secondary">Generate SEO with AI</button>
+      <button type="button" id="generateSeoAI" class="admin-btn admin-btn-muted">Generate SEO with AI</button>
       <button type="submit" class="admin-btn"><%= submitText %></button>
     </div>
   </form>
@@ -43,16 +43,21 @@
 <script>
 (function () {
   const button = document.getElementById('generateSeoAI');
-  const form = document.querySelector('form');
+  const form = document.getElementById('productForm');
   if (!button || !form) return;
 
   button.addEventListener('click', async function () {
-    button.disabled = true;
-    button.textContent = 'Generating...';
-
     const name = form.querySelector('input[name="name"]').value.trim();
     const description = form.querySelector('textarea[name="description"]').value.trim();
     const shortDescription = form.querySelector('input[name="shortDescription"]').value.trim();
+
+    if (!name && !description && !shortDescription) {
+      alert('Enter a product name and description before generating SEO.');
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Generating...';
 
     try {
       const response = await fetch('/admin/products/ai-seo', {
@@ -60,16 +65,23 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, description, shortDescription })
       });
-      const data = await response.json();
-      if (data.success) {
-        form.querySelector('input[name="seoTitle"]').value = data.seoTitle || form.querySelector('input[name="seoTitle"]').value;
-        form.querySelector('textarea[name="seoDescription"]').value = data.seoDescription || form.querySelector('textarea[name="seoDescription"]').value;
-        form.querySelector('input[name="seoKeywords"]').value = data.seoKeywords || form.querySelector('input[name="seoKeywords"]').value;
-      } else {
-        alert(data.error || 'Unable to generate SEO content.');
+
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        throw new Error('Server returned an invalid response. Please sign in again and retry.');
       }
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || `Request failed (${response.status})`);
+      }
+
+      form.querySelector('input[name="seoTitle"]').value = data.seoTitle || '';
+      form.querySelector('textarea[name="seoDescription"]').value = data.seoDescription || '';
+      form.querySelector('input[name="seoKeywords"]').value = data.seoKeywords || '';
     } catch (error) {
-      alert('AI SEO service is unavailable.');
+      alert(error.message || 'AI SEO service is unavailable.');
     } finally {
       button.disabled = false;
       button.textContent = 'Generate SEO with AI';

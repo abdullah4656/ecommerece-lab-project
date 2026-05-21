@@ -1,3 +1,12 @@
   </main>
+  <% const isMinimalHeader = typeof minimalHeader !== 'undefined' && minimalHeader; %>
+  <% if (!isMinimalHeader) { %>
+  <footer class="admin-footer">
+    <div class="admin-container admin-footer-inner">
+      <p>&copy; <%= new Date().getFullYear() %> Coat and Craft. Admin panel.</p>
+      <a href="/">Back to storefront</a>
+    </div>
+  </footer>
+  <% } %>
 </body>
 </html>

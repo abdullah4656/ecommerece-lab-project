@@ -5,12 +5,13 @@ const mongoose = require('mongoose');
 const helmet = require('helmet');
 const session = require('express-session');
 const SeoSetting = require('./models/SeoSetting');
+const brand = require('./config/brand');
 const { loadCurrentUser } = require('./middleware/auth');
 
 const app = express();
 
 const PORT = process.env.PORT || 8000;
-const SESSION_SECRET = process.env.SESSION_SECRET || 'scoopcraft-dev-secret';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'coatandcraft-dev-secret';
 
 app.set('trust proxy', 1);
 
@@ -83,6 +84,10 @@ app.use(
 // =========================
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(loadCurrentUser);
+app.use((req, res, next) => {
+  res.locals.minimalHeader = false;
+  next();
+});
 
 // =========================
 // SEO Middleware
@@ -92,17 +97,13 @@ app.use(async (req, res, next) => {
     const setting = await SeoSetting.findOne().lean();
 
     res.locals.seo = {
-      siteTitle: setting?.siteTitle || 'ScoopCraft Pints',
+      siteTitle: setting?.siteTitle || brand.siteTitle,
       titleSeparator: setting?.titleSeparator || '|',
-      metaDescription:
-        setting?.metaDescription ||
-        'Build custom 3-flavour and 4-flavour artisan ice cream pints with one-time or subscription delivery.',
-      metaKeywords:
-        setting?.metaKeywords ||
-        'custom ice cream pints, flavour builder, artisan dessert, pint subscription',
+      metaDescription: setting?.metaDescription || brand.metaDescription,
+      metaKeywords: setting?.metaKeywords || brand.metaKeywords,
       canonicalBaseUrl: setting?.canonicalBaseUrl || '',
       robots: setting?.robots || 'index, follow',
-      ogImage: setting?.ogImage || '/assets/blackseamer-honey-pint.jpg',
+      ogImage: setting?.ogImage || brand.defaultOgImage,
       twitterCard: setting?.twitterCard || 'summary_large_image'
     };
 
@@ -119,15 +120,13 @@ app.use(async (req, res, next) => {
         : `${baseUrl}${res.locals.seo.ogImage}`;
   } catch (error) {
     res.locals.seo = {
-      siteTitle: 'ScoopCraft Pints',
+      siteTitle: brand.siteTitle,
       titleSeparator: '|',
-      metaDescription:
-        'Build custom 3-flavour and 4-flavour artisan ice cream pints with one-time or subscription delivery.',
-      metaKeywords:
-        'custom ice cream pints, flavour builder, artisan dessert, pint subscription',
+      metaDescription: brand.metaDescription,
+      metaKeywords: brand.metaKeywords,
       canonicalBaseUrl: '',
       robots: 'index, follow',
-      ogImage: '/assets/blackseamer-honey-pint.jpg',
+      ogImage: brand.defaultOgImage,
       twitterCard: 'summary_large_image'
     };
   }
@@ -157,7 +156,7 @@ app.use('/wishlist', wishlistRoutes);
 // =========================
 app.use((req, res) => {
   res.status(404).render('404', {
-    title: 'Page Not Found | ScoopCraft'
+    title: 'Page Not Found | coat and craft'
   });
 });
 
@@ -166,8 +165,18 @@ app.use((req, res) => {
 // =========================
 mongoose
   .connect(MONGODB_URI)
-  .then(() => {
+  .then(async () => {
     console.log('🚀 Server starting...');
+
+    try {
+      const { seedBlogs } = require('./scripts/seed-blogs');
+      const created = await seedBlogs();
+      if (created > 0) {
+        console.log(`✅ Seeded ${created} Coat and Craft blog post(s)`);
+      }
+    } catch (err) {
+      console.error('⚠️ Blog seed skipped:', err.message);
+    }
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
